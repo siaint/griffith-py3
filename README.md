@@ -3,26 +3,25 @@
 Griffith is a film collection manager, released under the GNU/GPL License.
 
 Please see the file COPYING for licensing and warranty information.
-The latest version of this software is available at the following URL:
-https://github.com/micjahn/Griffith
+
 
 ## System Requirements
 
 | Name                                                     | Minimum version | URL                                            | NOTE                                                  |
 |----------------------------------------------------------|-----------------|------------------------------------------------|-------------------------------------------------------|
-| Python                                                   | 2.5 or higher   | https://www.python.org                         |                                                       |
-| GTK+                                                     | tested on 2.8.6 | https://www.gtk.org                            |                                                       |
-| PyGTK (with glade3)                                      | 2.6.8           | https://pygobject.readthedocs.io               |                                                       |
-| SQLAlchemy                                               | 0.5             | https://www.sqlalchemy.org/                    |                                                       |
-| pysqlite2                                                | 2               | https://github.com/ghaering/pysqlite           | Python 2.5's sqlite3 module will be used if available |
-| PIL                                                      |                 | http://www.pythonware.com/products/pil/        |                                                       |
-| ReportLab                                                | 1.19            | https://www.reportlab.com/                     |                                                       |
-| PostgreSQL support (optional): Psycopg2                  | 2               | http://initd.org/psycopg/docs/                 |                                                       |
-| MySQL support: MySQLDb                                   |                 | https://sourceforge.net/projects/mysql-python/ |                                                       |
-| Encoding detection of imported CSV file support: chardet |                 | https://github.com/chardet/chardet             |                                                       |
-| Gtkspell: python-gnome-extras                            |                 |                                                |                                                       |
-| Covers and reports support: PDF reader                   |                 |                                                |                                                       |
-|                                                          |                 |                                                |                                                       |
+| Python                                                   | 3.10 or higher  | https://www.python.org                         | Tested up to Python 3.14                              |
+| GTK+                                                     | 3.24.0          | https://www.gtk.org                            | GTK 3 toolkit                                         |
+| PyGObject (replacing PyGTK)                              | 3.42.0          | https://pygobject.readthedocs.io               | GObject Introspection bindings (`gi.repository.Gtk`)  |
+| SQLAlchemy                                               | 2.0             | https://www.sqlalchemy.org/                    | Imperative mapping (`registry.map_imperatively`)      |
+| SQLite support                                           | Built-in        | https://docs.python.org/3/library/sqlite3.html | Python standard library `sqlite3` module is used      |
+| Pillow (replacing PIL)                                   | 9.0             | https://python-pillow.org/                     | Poster and cover image manipulation                   |
+| ReportLab                                                | 3.5             | https://www.reportlab.com/                     | PDF generation for covers and printable reports       |
+| PostgreSQL support (optional): Psycopg                   | 2.9 or 3.0      | https://www.psycopg.org/                       | Optional driver for remote PostgreSQL databases       |
+| MySQL support (optional): mysqlclient or PyMySQL         | 2.0             | https://github.com/PyMySQL/mysqlclient         | Replaces obsolete MySQLdb / MySQL-python              |
+| Encoding detection of imported CSV file support: chardet | 4.0             | https://github.com/chardet/chardet             | Automatic charset detection on CSV imports            |
+| GtkSpell (optional)                                      | 3.0             | https://gitlab.gnome.org/GNOME/gtkspell        | GObject Introspection bindings via GtkSpell-3.0       |
+| Covers and reports support: PDF reader                   |                 |                                                | Any system PDF viewer (Evince, SumatraPDF, etc.)      |
+
 ## To check dependencies
 
     $ ./griffith --check-dep
