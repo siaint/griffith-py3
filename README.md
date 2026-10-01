@@ -1,6 +1,9 @@
 # Griffith
 
 Griffith is a film collection manager, released under the GNU/GPL License.
+Original sources are here (not updated for years): https://github.com/micjahn/griffith
+
+This is a small fork intended to make it work on Win11. It is made with Gemini AI.
 
 Please see the file COPYING for licensing and warranty information.
 
