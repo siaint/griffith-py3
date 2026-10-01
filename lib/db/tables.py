@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 # vim: fdm=marker
+from __future__ import absolute_import
 __revision__ = '$Id: tables.py 1538 2011-02-13 20:04:22Z piotrek $'
 
 # Copyright © 2009 Piotr Ożarowski
@@ -23,13 +24,14 @@ __revision__ = '$Id: tables.py 1538 2011-02-13 20:04:22Z piotrek $'
 
 import datetime
 from sqlalchemy import Table, Column, ForeignKey, func
-from sqlalchemy.types import Boolean, Unicode, Text, Integer, SmallInteger, Date, Binary, PickleType, DateTime
+from sqlalchemy.types import Boolean, Unicode, Text, Integer, SmallInteger, Date, LargeBinary as Binary, PickleType, DateTime
 
-from db import metadata
+from . import metadata
 
 posters = Table('posters', metadata,
     Column('md5sum', Unicode(32), primary_key=True),
-    Column('data', Binary(1048576), nullable=False))
+    Column('data', Binary(1048576), nullable=False),
+    extend_existing=True)
 
 volumes = Table('volumes', metadata,
     Column('volume_id', Integer, primary_key=True),

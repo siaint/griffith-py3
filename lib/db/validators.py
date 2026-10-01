@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 # vim: fdm=marker
+from __future__ import absolute_import
 __revision__ = '$Id$'
 
 # Copyright © 2011
@@ -23,7 +24,18 @@ __revision__ = '$Id$'
 
 import logging
 
-from sqlalchemy.orm.interfaces import AttributeExtension
+try:
+    from sqlalchemy.orm.interfaces import AttributeExtension
+except ImportError:
+    class AttributeExtension:
+        """Эмулятор устаревшего AttributeExtension для SQLAlchemy 2.0+"""
+        def append(self, state, value, initiator):
+            return value
+        def set(self, state, value, oldvalue, initiator):
+            return value
+        def remove(self, state, value, initiator):
+            pass
+
 try:
     # sql alchemy 0.8 (and above)
     from sqlalchemy.ext.instrumentation import InstrumentationManager

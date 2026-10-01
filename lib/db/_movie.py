@@ -1,4 +1,7 @@
 # -*- coding: UTF-8 -*-
+from __future__ import absolute_import
+import six
+from six.moves import map
 __revision__ = '$Id: _movie.py 1556 2011-06-13 20:46:47Z mikej06 $'
 
 # Copyright © 2009-2011 Piotr Ożarowski
@@ -26,8 +29,8 @@ from sqlalchemy import and_, or_
 from sqlalchemy.orm import object_session
 from sqlalchemy.sql import select, update
 
-import tables
-from _objects import Loan, DBTable
+from . import tables
+from ._objects import Loan, DBTable
 
 log = logging.getLogger('Griffith')
 
@@ -59,7 +62,7 @@ res_aliases = {(2560, 1600): ('QSXGA',),
                 (1, 2): ('Widescreen',),
                 (1, 3): ('Anamorphic Widescreen',)}
 res_alias_res = {}
-for res, aliases in res_aliases.iteritems():
+for res, aliases in six.iteritems(res_aliases):
     for alias in aliases:
         res_alias_res[alias.upper()] = res
 del aliases, alias, res
@@ -76,10 +79,10 @@ class Movie(DBTable):
         else:
             try:
                 if 'x' in res_string:
-                    self.width, self.height = map(int, res_string.lower().split('x'))
+                    self.width, self.height = list(map(int, res_string.lower().split('x')))
                 else:
-                    self.width, self.height = map(int, res_string.lower().split())
-            except Exception, e:
+                    self.width, self.height = list(map(int, res_string.lower().split()))
+            except Exception as e:
                 log.warning('wrong resolution name: %s', e)
                 raise ValueError('Use standard resolution name or \d+x\d+')
 

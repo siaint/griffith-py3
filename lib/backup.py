@@ -1,5 +1,8 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from __future__ import print_function
+from six.moves import range
 __revision__ = '$Id: backup.py 1632 2012-12-16 21:15:57Z mikej06 $'
 
 # Copyright (c) 2005-2009 Vasco Nunes, Piotr Ożarowski
@@ -26,19 +29,21 @@ import datetime
 import logging
 import os.path
 import zipfile
-from StringIO import StringIO
+from io import BytesIO
 from shutil import rmtree, move
 from tempfile import mkdtemp
 
-import gtk
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select, insert, text
 from platform import system
 
-import config
-import gutils
-import db
-import sql
-from initialize import dictionaries, people_treeview
+from lib import config
+from lib import gutils
+from lib import db
+from lib import sql
+from lib.initialize import dictionaries, people_treeview
+
+from gi.repository import Gtk
+gtk = Gtk
 
 try:
     import EasyDialogs
@@ -56,12 +61,12 @@ def create(self):
     default_name = "%s_backup_%s.zip" % (self.config.get('name', 'griffith', section='database'),\
                     datetime.date.isoformat(datetime.datetime.now()))
     filename = gutils.file_chooser(_("Save Griffith backup"), \
-        action=gtk.FILE_CHOOSER_ACTION_SAVE, name=default_name, \
-        buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+        action=Gtk.FileChooserAction.SAVE, name=default_name, \
+        buttons=(gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, gtk.STOCK_SAVE, Gtk.ResponseType.OK))
 
     if filename and filename[0]:
         proceed = True
-        zipfilename = filename[0].decode('utf-8')
+        zipfilename = filename[0]
         log.debug('Backup filename: %s', zipfilename)
         if os.path.isfile(zipfilename):
             if not gutils.question(_("File exists. Do you want to overwrite it?"), window=self.widgets['window']):
@@ -79,10 +84,10 @@ def create(self):
                 gutils.error(_("Error creating backup"), self.widgets['window'])
                 return False
             log.debug('Preparing data and saving it to the zip archive')
-            if self.db.session.bind.engine.name == 'sqlite':
-                mzip.write(os.path.join(self.locations['home'], 'griffith.cfg').encode('utf-8'), arcname='griffith.cfg')
+            if self.db.engine.name == 'sqlite':
+                mzip.write(os.path.join(self.locations['home'], 'griffith.cfg'), arcname='griffith.cfg')
                 db_file_name = "%s.db" % self.config.get('name', 'griffith', section='database')
-                file_path = os.path.join(self.locations['home'], db_file_name).encode('utf-8')
+                file_path = os.path.join(self.locations['home'], db_file_name)
                 mzip.write(file_path, arcname=db_file_name)
             else:
                 tmp_engine = None
@@ -102,16 +107,19 @@ def create(self):
                     db.metadata.create_all(bind=tmp_engine)
 
                     # SQLite doesn't care about foreign keys much so we can just copy the data
-                    for table in db.metadata.sorted_tables:
-                        if table.name in ('posters', 'filters'):
-                            continue  # see below
-                        data = table.select(bind=self.db.session.bind).execute().fetchall()
-                        if data:
-                            table.insert(bind=tmp_engine).execute(data)
+                    with self.db.engine.connect() as src_conn, tmp_engine.begin() as dst_conn:
+                        for table in db.metadata.sorted_tables:
+                            if table.name in ('poster', 'posters', 'filters'):
+                                continue
+                            rows = [dict(r._mapping) for r in src_conn.execute(select(table)).fetchall()]
+                            if rows:
+                                dst_conn.execute(table.insert(), rows)
 
-                    # posters
-                    for poster in db.metadata.tables['posters'].select(bind=self.db.session.bind).execute():
-                        db.metadata.tables['posters'].insert(bind=tmp_engine).execute(md5sum=poster.md5sum, data=StringIO(poster.data).read())
+                        # posters
+                        p_table = getattr(db, 'Poster', None).__table__ if hasattr(db, 'Poster') else (db.metadata.tables.get('poster') or db.metadata.tables.get('posters'))
+                        for p in src_conn.execute(select(p_table)).fetchall():
+                            p_dict = dict(p._mapping)
+                            dst_conn.execute(p_table.insert(), [{'md5sum': p_dict['md5sum'], 'data': bytes(p_dict['data'])}])
 
                     mzip.write(tmp_file, arcname='griffith.db')
                 finally:
@@ -124,41 +132,60 @@ def create(self):
 
 @gutils.popup_message(_('Restoring database...'))
 def copy_db(src_engine, dst_engine):
-    log.debug('replacing old database with new one')
-    db.metadata.drop_all(dst_engine)  # remove all previous data
-    db.metadata.create_all(dst_engine)  # create table stucture
+    print('=' * 60)
+    print('[RESTORE AUDIT] START copy_db')
+    print(f'[RESTORE AUDIT] SRC URL: {src_engine.url}')
+    print(f'[RESTORE AUDIT] DST URL: {dst_engine.url}')
+    print('=' * 60)
+    
+    # Включаем эхо на уровне движков, чтобы видеть сырой SQL в консоли
+    src_engine.echo = False
+    dst_engine.echo = False  # поставьте True, если захотите видеть каждый INSERT
 
-    # posters
-    for poster in db.metadata.tables['posters'].select(bind=src_engine).execute():
-        db.metadata.tables['posters'].insert(bind=dst_engine).execute(md5sum=poster.md5sum, data=StringIO(poster.data).read())
+    with src_engine.connect() as s_conn, dst_engine.begin() as d_conn:
+        print('[RESTORE AUDIT] Connected to both databases successfully.')
+        
+        # 1. Проверяем таблицу постеров
+        p_table = getattr(db, 'Poster', None).__table__ if hasattr(db, 'Poster') else (db.metadata.tables.get('poster') or db.metadata.tables.get('posters'))
+        if p_table is not None:
+            src_posters = s_conn.execute(select(p_table)).fetchall()
+            print(f'[RESTORE AUDIT] Source posters read: {len(src_posters)}')
+            d_conn.execute(p_table.delete())
+            print('[RESTORE AUDIT] Destination posters cleared.')
+            
+            seen_md5 = set()
+            poster_rows = []
+            for p in src_posters:
+                p_dict = dict(p._mapping)
+                md5 = p_dict.get('md5sum')
+                if md5 and md5 not in seen_md5:
+                    seen_md5.add(md5)
+                    raw_data = p_dict.get('data')
+                    poster_rows.append({'md5sum': md5, 'data': bytes(raw_data) if raw_data is not None else b''})
+            if poster_rows:
+                d_conn.execute(p_table.insert(), poster_rows)
+            print(f'[RESTORE AUDIT] Destination posters inserted: {len(poster_rows)}')
 
-    for table in db.metadata.sorted_tables:
-        if table.name in ('posters',):
-            continue  # see above
-        log.debug('... processing %s table', table)
-        data = [dict((col.key, row[col.name]) for col in table.c)
-                    for row in src_engine.execute(table.select())]
-        if data:
-            log.debug('inserting new data...')
-            insertcmd = table.insert()
-            # insert in steps of 100 items because otherwise there is an error with mysql
-            # I tried to insert more than 800 movies at ones: OperationalError
-            for partition in range(0, len(data), 10):
-                dst_engine.execute(insertcmd, data[partition:partition + 10])
+        # 2. Перебираем остальные таблицы
+        for table in db.metadata.sorted_tables:
+            if table.name in ('poster', 'posters', 'filters'):
+                continue
+            rows = s_conn.execute(select(table)).fetchall()
+            print(f'[RESTORE AUDIT] Table "{table.name}": read {len(rows)} rows from SRC')
+            
+            # Очищаем таблицу перед накатыванием
+            d_conn.execute(table.delete())
+            
+            data = [dict(r._mapping) for r in rows]
+            if data:
+                insertcmd = table.insert()
+                for partition in range(0, len(data), 50):
+                    d_conn.execute(insertcmd, data[partition:partition + 50])
+            print(f'[RESTORE AUDIT] Table "{table.name}": inserted {len(data)} rows into DST')
 
-            if dst_engine.name == 'postgres':
-                # update current value of sequences
-                primary_column_name = table.primary_key.keys()[0]
-                if primary_column_name.endswith('_id'):
-                    currval = max(row[primary_column_name] for row in data)
-                    query = "SELECT setval('%s_%s_seq', %s)" % (table.name, primary_column_name, currval)
-                    log.debug('updating sequence: %s', query)
-                    try:
-                        dst_engine.execute(query)
-                    except Exception, e:
-                        e = getattr(e, 'message', e)
-                        log.error('... cannot update sequence: %s', e)
-
+    print('=' * 60)
+    print('[RESTORE AUDIT] copy_db FINISHED & COMMITTED!')
+    print('=' * 60)
 
 def merge_db(src_db, dst_db):  # FIXME
     merged = 0
@@ -183,7 +210,7 @@ def merge_db(src_db, dst_db):  # FIXME
         t_movies.pop('collection_id')
 
         if dst_db.add_movie(t_movies):  # FIXME
-            print t_movies
+            print(t_movies)
 
         if movie.image is not None:
             dest_file = os.path.join(self.locations['posters'], movie.image + '.jpg')
@@ -204,8 +231,8 @@ def restore(self, merge=False):
     """
     # let user select a backup file
     filename, path = gutils.file_chooser(_("Restore Griffith backup"), \
-                action=gtk.FILE_CHOOSER_ACTION_OPEN, backup=True, \
-                buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+                action=Gtk.FileChooserAction.OPEN, backup=True, \
+                buttons=(gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, gtk.STOCK_OPEN, Gtk.ResponseType.OK))
     if not filename:
         log.debug('no file selected')
         return False
@@ -214,7 +241,7 @@ def restore(self, merge=False):
         tmp_db = None
         tmp_dir = mkdtemp()
         os.mkdir(os.path.join(tmp_dir, 'posters'))
-        print filename
+        print(filename)
         if filename.lower().endswith('.zip'):
             try:
                 zip_file = zipfile.ZipFile(filename, 'r')
@@ -275,7 +302,10 @@ def restore(self, merge=False):
             merge_db(tmp_db, self.db)
         else:
             self.db.session.rollback()  # cancel all pending operations
-            copy_db(tmp_db.session.bind, self.db.session.bind)
+            print(f"[RESTORE AUDIT] tmp_dir: {tmp_dir}")
+            print(f"[RESTORE AUDIT] tmp_db engine: {tmp_db.engine.url}")
+            print(f"[RESTORE AUDIT] self.db engine: {self.db.engine.url}")
+            copy_db(tmp_db.engine, self.db.engine)
             # update old database section with current config values
             # (important while restoring to external databases)
             for key in ('name', 'passwd', 'host', 'user', 'file', 'type', 'port'):

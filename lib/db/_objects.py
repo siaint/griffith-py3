@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 # vim: fdm=marker
+from __future__ import absolute_import
+import six
 __revision__ = '$Id: _objects.py 1556 2011-06-13 20:46:47Z mikej06 $'
 
 # Copyright © 2009-2011 Piotr Ożarowski
@@ -29,8 +31,8 @@ from sqlalchemy import and_, func
 from sqlalchemy.orm import validates, object_session
 from sqlalchemy.sql import select, update
 
-import tables
-import validators
+from . import tables
+from . import validators
 
 log = logging.getLogger('Griffith')
 
@@ -198,7 +200,7 @@ class Person(DBTable):
         """removes non-digits"""
         allchars = string.maketrans('', '')
         delchars = allchars.translate(allchars, string.digits)
-        return unicode(str(value).translate(allchars, delchars))
+        return six.text_type(str(value).translate(allchars, delchars))
 
 
 class Poster(object):
@@ -248,4 +250,4 @@ class MovieTag(object):
 
 
 # has to be at the end of file (objects from this module are imported there)
-from _movie import Movie # from _objects import * should import Movie as well
+from ._movie import Movie # from _objects import * should import Movie as well
