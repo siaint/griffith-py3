@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from six.moves import range
 __revision__ = '$Id: PluginMovieDVDPalace.py 1626 2012-07-03 20:45:58Z mikej06 $'
 
 # Copyright (c) 2006-2012
@@ -43,7 +45,7 @@ class Plugin(movie.Movie):
 
     def get_image(self):
         self.image_url = gutils.trim(self.page, 'src="/showcover.php?', '"')
-        if self.image_url <> '':
+        if self.image_url != '':
             self.image_url = 'http://www.dvd-palace.de/showcover.php?' + self.image_url
 
     def get_o_title(self):
@@ -187,7 +189,7 @@ class SearchPlugin(movie.SearchMovie):
         elements[0] = None
         for index in range(1, len(elements), 2):
             element = elements[index + 1]
-            if element <> None:
+            if element != None:
                 if elements[index] == '/datenbank/medien/blu-ray/':
                     medium = 'Blu-Ray'
                     self.ids.append('blu-ray/' + gutils.before(element,'"'))

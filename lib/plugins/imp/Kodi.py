@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: $'
 
 # Copyright (c) 2015-2016 Elan Ruusamäe <glen@pld-linux.org>
@@ -131,7 +132,7 @@ class ImportPlugin(IP):
         try:
             self.xml = etree.parse(self.filename)
             version = self.xml.xpath('/videodb/version')[0].text
-        except Exception, e:
+        except Exception as e:
             log.error(str(e))
         log.info('Found file version %s' % version)
         return version
@@ -146,7 +147,7 @@ class ImportPlugin(IP):
 
         try:
             count = int(self.xml.xpath('count(/videodb/movie)'))
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
 
         log.info('%s movies for import' % count)

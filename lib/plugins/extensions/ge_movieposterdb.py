@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from gi.repository import GdkPixbuf
 __revision__ = '$Id: ge_movieposterdb.py 1624 2012-06-07 19:07:22Z mikej06 $'
 
 # Copyright © 2010 Michael Jahn
@@ -23,7 +25,8 @@ __revision__ = '$Id: ge_movieposterdb.py 1624 2012-06-07 19:07:22Z mikej06 $'
 
 import os
 import logging
-from urllib import quote, urlcleanup
+from six.moves.urllib.parse import quote
+from six.moves.urllib.request import urlcleanup
 import gtk
 import gutils
 from edit import update_image_from_memory
@@ -115,7 +118,7 @@ class GriffithExtension(Base):
             update_image_from_memory(self.app, movie.number, data)
 
     def _show_preview(self, data):
-        loader = gtk.gdk.PixbufLoader()
+        loader = GdkPixbuf.PixbufLoader()
         loader.write(data, len(data))
         loader.close()
         # show before set_from_pixbuf because it doesn't resize otherwise
@@ -145,7 +148,7 @@ class GriffithExtension(Base):
                     gtk.main_iteration()
             try:
                 if retriever.html:
-                    ifile = file(retriever.html[0], 'rb')
+                    ifile = open(retriever.html[0], 'rb')
                     try:
                         data = ifile.read()
                     finally:

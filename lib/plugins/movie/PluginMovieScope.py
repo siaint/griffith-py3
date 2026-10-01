@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieScope.py 1405 2010-03-02 21:26:35Z mikej06 $'
 
 # Copyright (c) 2010

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id$'
 
 # Copyright (c) 2010-2015 Enrico Carlesso
@@ -124,7 +125,7 @@ class Plugin(movie.Movie):
         if self.rating:
             try:
                 self.rating = round(float(self.rating), 0)
-            except Exception, e:
+            except Exception as e:
                 self.rating = 0
 
     def get_notes(self):

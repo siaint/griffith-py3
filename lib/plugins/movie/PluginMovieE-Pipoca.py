@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from six.moves import range
 __revision__ = '$Id: PluginMovieE-Pipoca.py 1633 2012-12-28 23:11:42Z mikej06 $'
 
 # Copyright (c) 2005-2009 Vasco Nunes, Piotr Ożarowski
@@ -119,7 +121,7 @@ class Plugin(movie.Movie):
         Convert if needed when assigning."""
         tmp_rating = gutils.trim(self.page, "<br><b>Cota", " (")
         tmp_rating = gutils.after(tmp_rating, "</b>")
-        if tmp_rating <> "":
+        if tmp_rating != "":
             tmp_rating = string.replace(tmp_rating,',','.')
             self.rating = str( float(string.strip(tmp_rating)) )
         else:

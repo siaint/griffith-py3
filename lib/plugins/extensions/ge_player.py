@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+import six
 __revision__ = '$Id: ge_player.py 1568 2011-08-10 20:08:12Z mikej06 $'
 
 # Copyright © 2009 Piotr Ożarowski
@@ -42,7 +44,7 @@ class GriffithExtension(Base):
     preferences = {'command': {'name': _('Command'),
                                'hint': _('{1} (if given) will be replaced with file path'),
                                'default': 'mplayer {1}',
-                               'type': unicode}}
+                               'type': six.text_type}}
     if is_windows_system():
         preferences['command']['default'] = ''
 

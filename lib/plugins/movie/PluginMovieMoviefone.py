@@ -6,8 +6,10 @@
 # You may use and distribute this software under the terms of the
 # GNU General Public License, version 2 or later
 
+from __future__ import absolute_import
 import gutils
 import movie,string,re
+from six.moves import range
 
 plugin_name        = "Moviefone"
 plugin_description = "A Service of America Online"

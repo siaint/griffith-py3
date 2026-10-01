@@ -1,5 +1,6 @@
 # -*- coding: iso-8859-15 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieCulturalia.py 389 2006-07-29 18:43:35Z piotrek $'
 
 # Copyright (c) 2006 Pedro D. Sánchez
@@ -131,7 +132,7 @@ class SearchPlugin(movie.SearchMovie):
     def get_searches(self):
         elements = string.split(self.page, '<td><b>')
 
-        if (elements[0]<>''):
+        if (elements[0]!=''):
             for element in elements:
                 self.ids.append(gutils.trim(element, 'ver.php?art=',"'"))
                 self.titles.append(gutils.strip_tags(gutils.convert_entities(gutils.trim(element, "target='_top'>", '</a>'))))

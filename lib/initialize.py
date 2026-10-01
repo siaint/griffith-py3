@@ -1,5 +1,9 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from __future__ import print_function
+from compat import GladeXMLCompat
+import six
 __revision__ = '$Id: initialize.py 1622 2012-04-10 17:07:16Z iznogoud $'
 
 # Copyright © 2005-2011 Vasco Nunes, Piotr Ożarowski
@@ -30,7 +34,8 @@ import sys
 from glob import glob
 from locale import getdefaultlocale
 
-import gobject
+from gi.repository import GObject as gobject
+from gi.repository import Gtk, Gdk, GdkPixbuf
 import gtk
 
 import db
@@ -84,7 +89,7 @@ def locations(self, home_dir):
         locations['images'] = os.path.join(locations['share'], 'images')
         locations['desktop'] = os.path.join(os.path.expanduser('~'), 'Desktop').decode(defaultEnc)
     else:
-        print 'Operating system not supported'
+        print('Operating system not supported')
         sys.exit()
 
     from tempfile import gettempdir
@@ -129,31 +134,35 @@ def gui(self):
 
     self.griffith_dir = self.locations['home']    # deprecated
 
-    if self.windows:
-        gtk.rc_parse('%s\\gtkrc' % self.locations['exec'])
+#    if self.windows:
+#        Gtk.rc_parse('%s\\gtkrc' % self.locations['exec'])
 
     gf = os.path.join(self.locations['glade'], 'griffith.glade')
     from widgets import define_widgets
-    define_widgets(self, gtk.glade.XML(gf))
+    define_widgets(self, GladeXMLCompat(gf))
 
     self.pdf_reader = self.config.get('pdf_reader')
 
 
+# СТАЛО:
 def i18n(self, location):
     gettext.bindtextdomain('griffith', location)
     gettext.textdomain('griffith')
-    gtk.glade.bindtextdomain('griffith', location)
-    gtk.glade.textdomain('griffith')
-    gettext.install('griffith', location, unicode=1)
-
+    gettext.install('griffith', location)
 
 def toolbar(self):
     """if toolbar is hide in config lets hide the widget"""
+    from gi.repository import Gtk
+
+    tb = self.widgets['toolbar']
+    if hasattr(tb, 'set_style'):
+        tb.set_style(Gtk.ToolbarStyle.ICONS)
+
     if not self.config.get('view_toolbar', True, section='window'):
-        self.widgets['toolbar'].hide()
+        tb.hide()
         self.widgets['menu']['toolbar'].set_active(False)
     else:
-        self.widgets['toolbar'].show()
+        tb.show_all()
         self.widgets['menu']['toolbar'].set_active(True)
     if not self.config.get('view_ext_toolbar', True, section='window'):
         self.widgets['extensions']['toolbar_hb'].hide()
@@ -167,71 +176,71 @@ def treeview(self):
     import main_treeview
     # set up the treeview to do multiple selection
     tree = self.widgets['treeview']
-    self.treemodel = gtk.TreeStore(str, gtk.gdk.Pixbuf, str, str, str, str, bool, str, str, int, str, str)
+    self.treemodel = Gtk.TreeStore(str, GdkPixbuf.Pixbuf, str, str, str, str, bool, str, str, int, str, str)
     tree.set_model(self.treemodel)
     tree.set_headers_visible(True)
-    tree.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
+    tree.get_selection().set_mode(Gtk.SelectionMode.MULTIPLE)
     self.widgets['treeview'].get_selection().connect("changed", main_treeview.on_tree_selection, self)
 
     # number column
-    renderer = gtk.CellRendererText()
-    self.number_column = gtk.TreeViewColumn(_('No.'), renderer, text=0)
+    renderer = Gtk.CellRendererText()
+    self.number_column = Gtk.TreeViewColumn(_('No.'), renderer, text=0)
     self.number_column.set_name('number')
     self.number_column.set_resizable(True)
     self.number_column.set_sort_column_id(0)
     self.number_column.set_reorderable(True)
     self.widgets['treeview'].append_column(self.number_column)
     # pic column
-    renderer = gtk.CellRendererPixbuf()
-    self.image_column = gtk.TreeViewColumn(_('Image'), renderer, pixbuf=1)
+    renderer = Gtk.CellRendererPixbuf()
+    self.image_column = Gtk.TreeViewColumn(_('Image'), renderer, pixbuf=1)
     self.image_column.set_name('image')
     self.image_column.set_resizable(False)
     self.image_column.set_reorderable(True)
     self.widgets['treeview'].append_column(self.image_column)
     # original title column
-    renderer = gtk.CellRendererText()
-    self.otitle_column = gtk.TreeViewColumn(_('Original Title'), renderer, text=2)
+    renderer = Gtk.CellRendererText()
+    self.otitle_column = Gtk.TreeViewColumn(_('Original Title'), renderer, text=2)
     self.otitle_column.set_name('otitle')
     self.otitle_column.set_resizable(True)
     self.otitle_column.set_sort_column_id(2)
     self.otitle_column.set_reorderable(True)
     self.widgets['treeview'].append_column(self.otitle_column)
     # title column
-    renderer = gtk.CellRendererText()
-    self.title_column = gtk.TreeViewColumn(_('Title'), renderer, text=3)
+    renderer = Gtk.CellRendererText()
+    self.title_column = Gtk.TreeViewColumn(_('Title'), renderer, text=3)
     self.title_column.set_name('title')
     self.title_column.set_resizable(True)
     self.title_column.set_sort_column_id(3)
     self.title_column.set_reorderable(True)
     self.widgets['treeview'].append_column(self.title_column)
     # director column
-    renderer = gtk.CellRendererText()
-    self.director_column = gtk.TreeViewColumn(_('Director'), renderer, text=4)
+    renderer = Gtk.CellRendererText()
+    self.director_column = Gtk.TreeViewColumn(_('Director'), renderer, text=4)
     self.director_column.set_name('director')
     self.director_column.set_sort_column_id(4)
     self.director_column.set_resizable(True)
     self.director_column.set_reorderable(True)
     self.widgets['treeview'].append_column(self.director_column)
     # genre column
-    renderer = gtk.CellRendererText()
-    self.genre_column = gtk.TreeViewColumn(_('Genre'), renderer, text=5)
+    renderer = Gtk.CellRendererText()
+    self.genre_column = Gtk.TreeViewColumn(_('Genre'), renderer, text=5)
     self.genre_column.set_name('genre')
     self.genre_column.set_sort_column_id(5)
     self.genre_column.set_resizable(True)
     self.genre_column.set_reorderable(True)
     self.widgets['treeview'].append_column(self.genre_column)
     # seen column
-    renderer = gtk.CellRendererToggle()
-    self.seen_column = gtk.TreeViewColumn(_('Seen it'), renderer, active=6)
+    renderer = Gtk.CellRendererToggle()
+    self.seen_column = Gtk.TreeViewColumn(_('Seen it'), renderer, active=6)
     self.seen_column.set_name('seen')
     self.seen_column.set_sort_column_id(6)
     self.seen_column.set_resizable(True)
     self.seen_column.set_reorderable(True)
     self.widgets['treeview'].insert_column(self.seen_column, 1)
     # year column
-    renderer = gtk.CellRendererText()
+    renderer = Gtk.CellRendererText()
     renderer.set_property('xalign', 0.5)
-    self.year_column = gtk.TreeViewColumn(_('Year'), renderer, text=7)
+    self.year_column = Gtk.TreeViewColumn(_('Year'), renderer, text=7)
     self.year_column.set_name('year')
     self.year_column.set_sort_column_id(7)
     self.year_column.set_resizable(True)
@@ -239,9 +248,9 @@ def treeview(self):
     self.year_column.set_reorderable(True)
     self.widgets['treeview'].append_column(self.year_column)
     # runtime column
-    renderer = gtk.CellRendererText()
+    renderer = Gtk.CellRendererText()
     renderer.set_property('xalign', 1)
-    self.runtime_column = gtk.TreeViewColumn(_('Runtime'), renderer, text=8)
+    self.runtime_column = Gtk.TreeViewColumn(_('Runtime'), renderer, text=8)
     self.runtime_column.set_name('runtime')
     self.runtime_column.set_sort_column_id(8)
     self.runtime_column.set_resizable(True)
@@ -249,9 +258,9 @@ def treeview(self):
     self.runtime_column.set_reorderable(True)
     self.widgets['treeview'].append_column(self.runtime_column)
     # rating column
-    renderer = gtk.CellRendererText()
+    renderer = Gtk.CellRendererText()
     renderer.set_property('xalign', 0.5)
-    self.rating_column = gtk.TreeViewColumn(_('Rating'), renderer, text=9)
+    self.rating_column = Gtk.TreeViewColumn(_('Rating'), renderer, text=9)
     self.rating_column.set_name('rating')
     self.rating_column.set_sort_column_id(9)
     self.rating_column.set_resizable(True)
@@ -259,9 +268,9 @@ def treeview(self):
     self.rating_column.set_reorderable(True)
     self.widgets['treeview'].append_column(self.rating_column)
     # created column
-    renderer = gtk.CellRendererText()
+    renderer = Gtk.CellRendererText()
     renderer.set_property('xalign', 0.5)
-    self.created_column = gtk.TreeViewColumn(_('Created'), renderer, text=10)
+    self.created_column = Gtk.TreeViewColumn(_('Created'), renderer, text=10)
     self.created_column.set_name('created')
     self.created_column.set_sort_column_id(10)
     self.created_column.set_resizable(True)
@@ -269,9 +278,9 @@ def treeview(self):
     self.created_column.set_reorderable(True)
     self.widgets['treeview'].append_column(self.created_column)
     # updated column
-    renderer = gtk.CellRendererText()
+    renderer = Gtk.CellRendererText()
     renderer.set_property('xalign', 0.5)
-    self.updated_column = gtk.TreeViewColumn(_('Updated'), renderer, text=11)
+    self.updated_column = Gtk.TreeViewColumn(_('Updated'), renderer, text=11)
     self.updated_column.set_name('updated')
     self.updated_column.set_sort_column_id(11)
     self.updated_column.set_resizable(True)
@@ -296,8 +305,10 @@ def treeview(self):
         for columnsize in columnsizessplitted:
             try:
                 columnsize = int(columnsize)
-                self.widgets['treeview'].get_column(currentcol).set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
-                self.widgets['treeview'].get_column(currentcol).set_fixed_width(columnsize)
+                col = self.widgets['treeview'].get_column(currentcol)
+                if col and columnsize > 1:
+                    col.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
+                    col.set_fixed_width(max(columnsize, 20))
             except:
                 pass
             currentcol = currentcol + 1
@@ -308,9 +319,9 @@ def treeview(self):
         if columnsortid:
             columnsortid = int(columnsortid)
             if columnsortorder:
-                columnsortorder = gtk.SortType(int(columnsortorder))
+                columnsortorder = Gtk.SortType(int(columnsortorder))
             else:
-                columnsortorder = gtk.SORT_ASCENDING
+                columnsortorder = Gtk.SortType.ASCENDING
             self.treemodel.set_sort_column_id(columnsortid, columnsortorder)
     except:
         log.exception('')
@@ -320,12 +331,12 @@ def treeview(self):
     self.widgets['treeview'].show()
 
     # adding some completion fields - TODO: move it to initialize
-    self.completion = gtk.EntryCompletion()
+    self.completion = Gtk.EntryCompletion()
     self.widgets['add']['o_title'].set_completion(self.completion)
     self.completion.set_model(self.treemodel)
     self.completion.set_text_column(3)
     # ... title
-    self.completion_t = gtk.EntryCompletion()
+    self.completion_t = Gtk.EntryCompletion()
     self.widgets['add']['title'].set_completion(self.completion_t)
     self.completion_t.set_model(self.treemodel)
     self.completion_t.set_text_column(4)
@@ -338,49 +349,49 @@ def search_func_treeview(model, column, key, iter):
 
 
 def loans_treeview(self):
-    self.loans_treemodel = gtk.TreeStore(str, str, str)  # move to self.widgets
+    self.loans_treemodel = Gtk.TreeStore(str, str, str)  # move to self.widgets
     self.widgets['movie']['loan_history'].set_model(self.loans_treemodel)
     self.widgets['movie']['loan_history'].set_headers_visible(True)
     # loan date
-    renderer = gtk.CellRendererText()
-    self.date_column = gtk.TreeViewColumn(_('Loan Date'), renderer, text=0)
+    renderer = Gtk.CellRendererText()
+    self.date_column = Gtk.TreeViewColumn(_('Loan Date'), renderer, text=0)
     self.date_column.set_resizable(True)
     self.widgets['movie']['loan_history'].append_column(self.date_column)
     self.date_column.set_sort_column_id(0)
     # return date
-    renderer = gtk.CellRendererText()
-    self.return_column = gtk.TreeViewColumn(_('Return Date'), renderer, text=1)
+    renderer = Gtk.CellRendererText()
+    self.return_column = Gtk.TreeViewColumn(_('Return Date'), renderer, text=1)
     self.return_column.set_resizable(True)
     self.widgets['movie']['loan_history'].append_column(self.return_column)
     # loan to
-    renderer = gtk.CellRendererText()
-    self.loaner_column = gtk.TreeViewColumn(_('Loaned To'), renderer, text=2)
+    renderer = Gtk.CellRendererText()
+    self.loaner_column = Gtk.TreeViewColumn(_('Loaned To'), renderer, text=2)
     self.loaner_column.set_resizable(True)
     self.widgets['movie']['loan_history'].append_column(self.loaner_column)
 
 
 def lang_treeview(self):
     treeview = self.widgets['add']['lang_treeview']
-    self.lang['model'] = gtk.TreeStore(str, str, str, str, str)
+    self.lang['model'] = Gtk.TreeStore(str, str, str, str, str)
     treeview.set_model(self.lang['model'])
     treeview.set_headers_visible(True)
 
-    model = self.lang['lang'] = gtk.ListStore(int, str)
+    model = self.lang['lang'] = Gtk.ListStore(int, str)
     for i in self.db.session.query(db.Lang.lang_id, db.Lang.name).all():
         model.append([i.lang_id, i.name])
-    combo = gtk.CellRendererCombo()
+    combo = Gtk.CellRendererCombo()
     combo.set_property('model', model)
     combo.set_property('text-column', 1)
     combo.set_property('editable', True)
     combo.set_property('has-entry', False)
     combo.connect('edited', self.on_tv_lang_combo_edited, 0)
-    column = gtk.TreeViewColumn(_('Language'), combo, text=0)
+    column = Gtk.TreeViewColumn(_('Language'), combo, text=0)
     column.set_property('min-width', 80)
     column.set_property('resizable', True)
     column.set_sort_column_id(0)
     treeview.append_column(column)
 
-    model = self.lang['type'] = gtk.ListStore(int, str)
+    model = self.lang['type'] = Gtk.ListStore(int, str)
     #i = 0
     #for lang_type in self._lang_types:
     #    model.append([i, lang_type])
@@ -390,58 +401,58 @@ def lang_treeview(self):
     model.append([2, _('dubbing')])
     model.append([3, _('subtitles')])
     model.append([4, _("commentary")])
-    combo = gtk.CellRendererCombo()
+    combo = Gtk.CellRendererCombo()
     combo.set_property('model', model)
     combo.set_property('text-column', 1)
     combo.set_property('editable', True)
     combo.set_property('has-entry', False)
     combo.connect('edited', self.on_tv_lang_combo_edited, 1)
-    column = gtk.TreeViewColumn(_('Type'), combo, text=1)
+    column = Gtk.TreeViewColumn(_('Type'), combo, text=1)
     column.set_property('min-width', 80)
     column.set_property('resizable', True)
     column.set_sort_column_id(1)
     treeview.append_column(column)
 
-    model = self.lang['acodec'] = gtk.ListStore(int, str)
+    model = self.lang['acodec'] = Gtk.ListStore(int, str)
     for i in self.db.session.query(db.ACodec.acodec_id, db.ACodec.name).all():
         model.append([i.acodec_id, i.name])
-    combo = gtk.CellRendererCombo()
+    combo = Gtk.CellRendererCombo()
     combo.set_property('model', model)
     combo.set_property('text-column', 1)
     combo.set_property('editable', True)
     combo.set_property('has-entry', False)
     combo.connect('edited', self.on_tv_lang_combo_edited, 2)
-    column = gtk.TreeViewColumn(_('Codec'), combo, text=2)
+    column = Gtk.TreeViewColumn(_('Codec'), combo, text=2)
     column.set_property('min-width', 80)
     column.set_property('resizable', True)
     column.set_sort_column_id(2)
     treeview.append_column(column)
 
-    model = self.lang['achannel'] = gtk.ListStore(int, str)
+    model = self.lang['achannel'] = Gtk.ListStore(int, str)
     for i in self.db.session.query(db.AChannel.achannel_id, db.AChannel.name).all():
         model.append([i.achannel_id, i.name])
-    combo = gtk.CellRendererCombo()
+    combo = Gtk.CellRendererCombo()
     combo.set_property('model', model)
     combo.set_property('text-column', 1)
     combo.set_property('editable', True)
     combo.set_property('has-entry', False)
     combo.connect('edited', self.on_tv_lang_combo_edited, 3)
-    column = gtk.TreeViewColumn(_('Channels'), combo, text=3)
+    column = Gtk.TreeViewColumn(_('Channels'), combo, text=3)
     column.set_property('min-width', 80)
     column.set_property('resizable', True)
     column.set_sort_column_id(3)
     treeview.append_column(column)
 
-    model = self.lang['subformat'] = gtk.ListStore(int, str)
+    model = self.lang['subformat'] = Gtk.ListStore(int, str)
     for i in self.db.session.query(db.SubFormat.subformat_id, db.SubFormat.name).all():
         model.append([i.subformat_id, i.name])
-    combo = gtk.CellRendererCombo()
+    combo = Gtk.CellRendererCombo()
     combo.set_property('model', model)
     combo.set_property('text-column', 1)
     combo.set_property('editable', True)
     combo.set_property('has-entry', False)
     combo.connect('edited', self.on_tv_lang_combo_edited, 4)
-    column = gtk.TreeViewColumn(_('Subtitle format'), combo, text=4)
+    column = Gtk.TreeViewColumn(_('Subtitle format'), combo, text=4)
     column.set_property('min-width', 80)
     column.set_property('resizable', True)
     column.set_sort_column_id(4)
@@ -482,7 +493,7 @@ def export_plugins(self):
     for p in plugins:
         plugin_module = os.path.basename(p).replace('.py', '')
         plugin_name = plugin_module.replace('PluginExport', '')
-        menu_items = gtk.MenuItem(plugin_name)
+        menu_items = Gtk.MenuItem(label=plugin_name)
         self.widgets['menu']['export'].append(menu_items)
         menu_items.connect('activate', self.on_export_activate, plugin_name)
         menu_items.show()
@@ -503,7 +514,7 @@ def import_plugins(self):
         'cameraman', 'barcode', 'tags', 'poster')
 
     # glade
-    glade_file = gtk.glade.XML(os.path.join(self.locations['glade'], 'import.glade'))
+    glade_file = GladeXMLCompat(os.path.join(self.locations['glade'], 'import.glade'))
     get = lambda x: glade_file.get_widget(x)
 
     w = self.widgets['import'] = {
@@ -539,7 +550,7 @@ def import_plugins(self):
     k = math.ceil(len(self.field_names) / float(3))
     for i in fields_to_import:
         j = j + 1
-        w['fields'][i] = gtk.CheckButton(self.field_names[i])
+        w['fields'][i] = Gtk.CheckButton(label=self.field_names[i])
         w['fields'][i].set_active(True)  # TODO: get from config
         if j <= k:
             w['box_import_1'].add(w['fields'][i])
@@ -556,7 +567,7 @@ def extension(self, module, enabled):
     if enabled:
         try:
             ext = module(self)
-        except (NotImplementedError, DeprecationWarning), e:
+        except (NotImplementedError, DeprecationWarning) as e:
             log.warning('extension skipped: %s', e.message)
             log.debug('extension skipped: %s', module.__file__)
             return [None, None]
@@ -569,11 +580,26 @@ def extension(self, module, enabled):
                 if not os.path.isfile(icon_path):
                     log.error('icon not found: %s', module.toolbar_icon)
                 else:
-                    icon = gtk.Image()
+                    icon = Gtk.Image()
                     icon.set_from_file(icon_path)
-                    ext.toolbar_icon_widget = toolbar.insert_item(None, module.description, None, icon, ext._on_toolbar_icon_clicked, None, -1)
+                    btn = Gtk.ToolButton()
+                    btn.set_icon_widget(icon)
+                    btn.set_tooltip_text(module.description)
+                    btn.connect('clicked', ext._on_toolbar_icon_clicked)
+                    toolbar.insert(btn, -1)
+                    btn.show_all()
+                    ext.toolbar_icon_widget = btn
             else:
-                ext.toolbar_icon_widget = toolbar.insert_stock(module.toolbar_icon, module.description, None, ext._on_toolbar_icon_clicked, None, -1)
+                btn = Gtk.ToolButton()
+                try:
+                    btn.set_stock_id(module.toolbar_icon)
+                except Exception:
+                    btn.set_icon_name(module.toolbar_icon)
+                btn.set_tooltip_text(module.description)
+                btn.connect('clicked', ext._on_toolbar_icon_clicked)
+                toolbar.insert(btn, -1)
+                btn.show_all()
+                ext.toolbar_icon_widget = btn
     else:
         ext = None
 
@@ -586,56 +612,57 @@ def extension_preferences(self, module, enabled):
     configwidgets = {}
 
     label = "%s v%s <i>(%s &lt;%s&gt;)</i>" % (module.name, module.version, module.author, module.email)
-    expander = gtk.Expander(label=label)
+    expander = Gtk.Expander(label=label)
     expander.get_label_widget().set_tooltip_markup(module.description)
     expander.set_use_markup(True)
-    vbox = gtk.VBox()
+    vbox = Gtk.VBox()
 
     # extension details
-    hbox = gtk.HBox()
-    vbox.pack_start(hbox, expand=False)
-    enabled_cb = gtk.CheckButton(label=_('Enable this extension'))
+    hbox = Gtk.HBox()
+    vbox.pack_start(hbox, False, False, 0)
+    enabled_cb = Gtk.CheckButton(label=_('Enable this extension'))
     enabled_cb.set_active(enabled)
     configwidgets['enabled'] = enabled_cb
-    vbox.pack_start(enabled_cb, expand=False)
+    vbox.pack_start(enabled_cb, False, False, 0)
 
     for pref_name in module.preferences:
         name = module.preferences[pref_name].get('name', pref_name)
         hint = module.preferences[pref_name].get('hint')
         value = module.preferences[pref_name].get('default')
         value = self.config.get("%s_%s" % (module.name, pref_name), value, section='extensions')
-        type_ = module.preferences[pref_name].get('type', unicode)
+        type_ = module.preferences[pref_name].get('type', six.text_type)
 
-        hbox = gtk.HBox()
-        hbox.pack_start(gtk.Label(name), expand=False, padding=4)
+        hbox = Gtk.HBox()
+        hbox.pack_start(Gtk.Label(label=name), False, True, 4)
 
-        if type_ is unicode:
-            w = gtk.Entry()
-            w.insert_text(value)
+        if type_ is six.text_type:
+            w = Gtk.Entry()
+            if value is not None:
+                w.set_text(str(value))
             # TODO: min, max
         # elif type is int: # TODO
         elif type_ is bool:
-            w = gtk.CheckButton()
+            w = Gtk.CheckButton()
             w.set_active(bool(value))
         elif isinstance(type_, (list, tuple, dict)):
-            model = gtk.TreeStore(str, str)
+            model = Gtk.TreeStore(str, str)
             if isinstance(type_, dict):
-                iterable = type_.iteritems()
+                iterable = six.iteritems(type_)
             else:
                 iterable = enumerate(type_)
             pos = None
             count = 0
             for code, codevalue in iterable:
                 myiter = model.append(None, None)
-                model.set_value(myiter, 0, unicode(code))
-                model.set_value(myiter, 1, unicode(codevalue))
+                model.set_value(myiter, 0, six.text_type(code))
+                model.set_value(myiter, 1, six.text_type(codevalue))
                 if value and value == codevalue:
                     pos = count
                 count = count + 1
             # combobox with complex binding to a model needs cell renderer
-            w = gtk.ComboBox(model=model)
-            renderer = gtk.CellRendererText()
-            w.pack_start(renderer)
+            w = Gtk.ComboBox(model=model)
+            renderer = Gtk.CellRendererText()
+            w.pack_start(renderer, True)
             w.add_attribute(renderer, 'text', 1)
             if pos is not None:
                 w.set_active(int(pos))
@@ -645,14 +672,14 @@ def extension_preferences(self, module, enabled):
 
         if hint:
             w.set_tooltip_markup(hint)
-        hbox.pack_start(w)
+        hbox.pack_start(w, True, True, 0)
 
-        vbox.pack_start(hbox, expand=False)
+        vbox.pack_start(hbox, False, False, 0)
 
         configwidgets[pref_name] = w
 
     expander.add(vbox)
-    p_vbox.pack_start(expander, expand=False)
+    p_vbox.pack_start(expander, False, False, 0)
     p_vbox.show_all()
 
     return configwidgets
@@ -681,20 +708,20 @@ def extensions(self):
 
 def people_treeview(self, create=True):
     row = None
-    self.p_treemodel = gtk.TreeStore(gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_STRING)
+    self.p_treemodel = Gtk.TreeStore(str, str, str, str)
     self.widgets['preferences']['treeview'].set_model(self.p_treemodel)
     self.widgets['preferences']['treeview'].set_headers_visible(True)
 
     if create is True:
         # name column
-        renderer = gtk.CellRendererText()
-        column = gtk.TreeViewColumn(_('Name'), renderer, text=0)
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn(_('Name'), renderer, text=0)
         column.set_resizable(True)
         column.set_sort_column_id(0)
         self.widgets['preferences']['treeview'].append_column(column)
         # email column
-        renderer = gtk.CellRendererText()
-        column = gtk.TreeViewColumn(_('E-mail'), renderer, text=1)
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn(_('E-mail'), renderer, text=1)
         column.set_resizable(True)
         column.set_sort_column_id(1)
         self.widgets['preferences']['treeview'].append_column(column)
@@ -832,17 +859,17 @@ def dictionaries(self):
 
 
 def web_results(self):
-    self.treemodel_results = gtk.TreeStore(str, str)
+    self.treemodel_results = Gtk.TreeStore(str, str)
     self.widgets['results']['treeview'].set_model(self.treemodel_results)
     self.widgets['results']['treeview'].set_headers_visible(False)
     # column ids
-    renderer = gtk.CellRendererText()
-    column1 = gtk.TreeViewColumn(None, renderer, text=0)
+    renderer = Gtk.CellRendererText()
+    column1 = Gtk.TreeViewColumn(title="", cell_renderer=renderer, text=0)
     column1.set_visible(False)
     self.widgets['results']['treeview'].append_column(column1)
     # column titles
-    renderer = gtk.CellRendererText()
-    column2 = gtk.TreeViewColumn(None, renderer, text=1)
+    renderer = Gtk.CellRendererText()
+    column2 = Gtk.TreeViewColumn(title="", cell_renderer=renderer, text=1)
     column2.set_resizable(True)
     column2.set_sort_column_id(1)
     self.widgets['results']['treeview'].append_column(column2)
@@ -896,11 +923,11 @@ def preferences(self):
         self.widgets['preferences']['db_type'].set_active(0)
 
     # add completion data
-    treemodel = gtk.TreeStore(str)
+    treemodel = Gtk.TreeStore(str)
     for name in (os.path.basename(x)[:-3] for x in glob("%s/*.db" % self.locations['home'])):
         myiter = treemodel.append(None)
         treemodel.set_value(myiter, 0, name)
-    completion = gtk.EntryCompletion()
+    completion = Gtk.EntryCompletion()
     completion.set_minimum_key_length(0)
     self.widgets['preferences']['db_name'].set_completion(completion)
     completion.set_model(treemodel)
@@ -995,7 +1022,7 @@ def fill_resolutions_combo(self, default=0):
     self.initialized = False  # don't refresh main treeview
     self.widgets['add']['resolution'].get_model().clear()
     #resolutions = [names[0] for names in db._movie.res_aliases.values()]
-    resolutions = [names[0] for (res, names) in db._movie.res_aliases.iteritems()]
+    resolutions = [names[0] for (res, names) in six.iteritems(db._movie.res_aliases)]
     resolutions.sort()
     i = 0
     for name in resolutions:
@@ -1133,9 +1160,9 @@ def create_tag_vbox(self, widget, tab):
     for i in self.tags_ids:
         tag_id = self.tags_ids[i]
         tag_name = self.db.session.query(db.Tag.name).filter_by(tag_id=tag_id).first().name
-        tab[i] = gtk.CheckButton(tag_name)
+        tab[i] = Gtk.CheckButton(tag_name)
         tab[i].set_active(False)
-        widget.pack_start(tab[i])
+        widget.pack_start(tab[i], False, False, 0)
     widget.show_all()
 
 

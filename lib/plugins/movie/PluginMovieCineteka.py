@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from six.moves import range
 __revision__ = '$Id$'
 
 # Copyright (c) 2005-2009 Vasco Nunes, Piotr Ozarowski
@@ -123,7 +125,7 @@ class Plugin(movie.Movie):
         self.rating = gutils.clean(gutils.trim(self.page, u'IMDB: ', u'</span>'))
         try:
             self.rating = round(float(self.rating), 0)
-        except Exception, e:
+        except Exception as e:
             self.rating = 0
 
     def get_screenplay(self):

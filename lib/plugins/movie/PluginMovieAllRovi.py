@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from six.moves import range
 __revision__ = '$Id: PluginMovieAllRovi.py 1633 2012-12-28 23:11:42Z mikej06 $'
 
 # Copyright (c) 2009-2011

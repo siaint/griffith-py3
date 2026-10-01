@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
+import six
 __revision__ = '$Id: BESTheMovieLibrary.py 1605 2011-12-18 22:35:25Z piotrek $'
 
 # Copyright (c) 2009
@@ -92,13 +94,13 @@ class ImportPlugin(IP):
         details = {}
         try:
             if currentrow[0]:
-                details['title'] = unicode(currentrow[0])
+                details['title'] = six.text_type(currentrow[0])
             if currentrow[1]:
-                details['genre'] = unicode(currentrow[1])
+                details['genre'] = six.text_type(currentrow[1])
             if currentrow[2]:
                 details['rating'] = 2 * len(str(currentrow[2]))
             if currentrow[3]:
-                details['classification'] = unicode(currentrow[3])
+                details['classification'] = six.text_type(currentrow[3])
             cast = ''
             if currentrow[4]:
                 cast = currentrow[4]
@@ -110,7 +112,7 @@ class ImportPlugin(IP):
             if currentrow[7]:
                 # setting medium_id to string mediumname; mapping is done in base class
                 details['medium_id'] = currentrow[7]
-        except Exception, e:
+        except Exception as e:
             log.exception('')
             details = None
 
@@ -141,7 +143,7 @@ class ImportPlugin(IP):
             if tablerow:
                 version = 1.9
             curs.close()
-        except Exception, e:
+        except Exception as e:
             log.error(str(e))
         log.info('BES The Movie Library Import: Found file version %s' % version)
         return version

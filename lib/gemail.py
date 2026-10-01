@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: gemail.py 1481 2010-12-07 22:32:30Z piotrek $'
 
 # Copyright (c) 2005-2007 Vasco Nunes

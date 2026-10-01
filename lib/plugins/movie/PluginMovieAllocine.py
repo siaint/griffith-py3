@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieAllocine.py 1655 2013-11-12 21:52:22Z mikej06 $'
 
 # Copyright (c) 2005-2012 Vasco Nunes, Piotr Ozarowski
@@ -25,7 +26,7 @@ from datetime import date
 import hashlib
 import base64
 import string
-import urllib
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import movie
 try:
     import simplejson as json
@@ -54,7 +55,7 @@ class Plugin(movie.Movie):
     def open_page(self, parent_window=None, url=None):
         query = self.query + '&sed=' + date.today().strftime("%Y%m%d")
         to_signature = '29d185d98c984a359e6e6f26a0474269' + query
-        signature = urllib.quote_plus(base64.b64encode(hashlib.sha1(to_signature).digest()))
+        signature = six.moves.urllib.parse.quote_plus(base64.b64encode(hashlib.sha1(to_signature).digest()))
         url = self.url + query + '&sig=' + signature
         self.page = movie.Movie.open_page(self, parent_window, url)
         return self.page
@@ -196,7 +197,7 @@ class SearchPlugin(movie.SearchMovie):
         query = string.replace(self.search_query % self.title, ' ', '%20')
         query = query + '&sed=' + date.today().strftime("%Y%m%d")
         to_signature = '29d185d98c984a359e6e6f26a0474269' + query
-        signature = urllib.quote_plus(base64.b64encode(hashlib.sha1(to_signature).digest()))
+        signature = six.moves.urllib.parse.quote_plus(base64.b64encode(hashlib.sha1(to_signature).digest()))
         self.title = self.search_url + query + '&sig=' + signature
         self.url = ''
         if not self.open_search(parent_window):

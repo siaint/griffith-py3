@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieAmazon.py 1633 2012-12-28 23:11:42Z mikej06 $'
 
 # Copyright (c) 2006-2012
@@ -28,7 +29,7 @@ import amazon
 import threading
 import gtk
 from operator import isSequenceType
-from urlparse import urlsplit
+from six.moves.urllib.parse import urlsplit
 import logging
 log = logging.getLogger("Griffith")
 
@@ -157,8 +158,8 @@ class Plugin(movie.Movie):
             if isSequenceType(self.page.BrowseNodes.BrowseNode):
                 for node in self.page.BrowseNodes.BrowseNode:
                     parentnode = node
-                    while hasattr(parentnode, 'Ancestors') and parentnode.BrowseNodeId <> '547664' \
-                            and parentnode.BrowseNodeId <> '13628901': # no production countries; they are also arranged under genres
+                    while hasattr(parentnode, 'Ancestors') and parentnode.BrowseNodeId != '547664' \
+                            and parentnode.BrowseNodeId != '13628901': # no production countries; they are also arranged under genres
                         parentnode = parentnode.Ancestors.BrowseNode
                     if parentnode.BrowseNodeId == '547664':
                         self.genre = self.genre + delimiter + node.Name
@@ -206,7 +207,7 @@ class Plugin(movie.Movie):
             if isSequenceType(self.page.BrowseNodes.BrowseNode):
                 for node in self.page.BrowseNodes.BrowseNode:
                     parentnode = node
-                    while hasattr(parentnode, 'Ancestors') and parentnode.BrowseNodeId <> '13628901':
+                    while hasattr(parentnode, 'Ancestors') and parentnode.BrowseNodeId != '13628901':
                         parentnode = parentnode.Ancestors.BrowseNode
                     if parentnode.BrowseNodeId == '13628901':
                         self.country = self.country + delimiter + node.Name
@@ -360,13 +361,13 @@ class AmazonRetriever(threading.Thread):
                     try:
                         tmp = amazon.searchByEAN(self.title, type='ItemAttributes', product_line='Video', locale=self.locale)
                         self.result.append(tmp)
-                    except amazon.AmazonError, e:
+                    except amazon.AmazonError as e:
                         log.exception('Error retrieving results from amazon.')
                 elif len(self.title) == 12:
                     try:
                         tmp = amazon.searchByUPC(self.title, type='ItemAttributes', product_line='Video', locale=self.locale)
                         self.result.append(tmp)
-                    except amazon.AmazonError, e:
+                    except amazon.AmazonError as e:
                         log.exception('Error retrieving results from amazon.')
         except IOError:
             log.exception('Error retrieving results from amazon.')
@@ -380,7 +381,7 @@ class AmazonRetriever(threading.Thread):
             # get by ASIN
             try:
                 self.result = amazon.searchByASIN(self.title, type='Large', locale=self.locale)
-            except amazon.AmazonError, e:
+            except amazon.AmazonError as e:
                 log.exception('Error retrieving results from amazon.')
         except IOError:
             log.exception('Error retrieving results from amazon.')

@@ -1,8 +1,12 @@
 
+from __future__ import absolute_import
+from __future__ import print_function
 from pyglet.gl import *
 from pyglet import image
 #from PIL import Image
 import anim
+from six.moves import filter
+from six.moves import range
 
 _glGenTextures = glGenTextures
 def glGenTextures(i):
@@ -88,7 +92,7 @@ class Texture:
         if iChannels == 4: format = GL_RGBA
         else: format = GL_RGB
         if not self.proxy_check(self.iTarget, iChannels, format, int(self.fWidth), int(self.fHeight)):
-            print "%s texture won't fit\n"%pcFilename
+            print("%s texture won't fit\n"%pcFilename)
             glDeleteTextures([self.uiTextureId])
             raise Exception()
         # finally create the GL texture-object
@@ -108,12 +112,12 @@ class Texture:
         bHeightIsPOT = False
         # test width for power-of-two 
         for i in range(32):
-          if (width - (1L << (i+1)) == 0):
+          if (width - (1 << (i+1)) == 0):
               bWidthIsPOT = True
               break
         # test height for power-of-two
         for i in range(32):
-          if (height - (1L << (i+1)) == 0):
+          if (height - (1 << (i+1)) == 0):
               bHeightIsPOT = True
               break
         # final conclusion */
@@ -264,7 +268,7 @@ def display(width, height, covers):
     glPushMatrix ()
     glTranslatef(-pValueCoverTrack.get(), 0, 0)
     # find the current one
-    i = filter(lambda i: covers[i].current, range(len(covers)))[0]
+    i = [i for i in range(len(covers)) if covers[i].current][0]
     for cover in covers[:i]:
         cover.draw()
     for cover in covers[:i:-1]:

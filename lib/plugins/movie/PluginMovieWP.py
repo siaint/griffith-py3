@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieWP.py 1412 2010-03-28 20:18:54Z mikej06 $'
 
 # Copyright (c) 2005-2010 Piotr Ożarowski

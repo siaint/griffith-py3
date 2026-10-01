@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: ge_remover.py 1576 2011-08-23 20:20:12Z mikej06 $'
 
 # Copyright © 2009 Piotr Ożarowski

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: AllMyMovies.py 1605 2011-12-18 22:35:25Z piotrek $'
 
 # Copyright (c) 2009
@@ -191,7 +192,7 @@ class ImportPlugin(IP):
                 details['poster'] = currentrow[0]
 
             curs.close()
-        except Exception, e:
+        except Exception as e:
             log.exception('')
             details = None
         #print details
@@ -222,7 +223,7 @@ class ImportPlugin(IP):
             if tablerow:
                 version = 5.7
             curs.close()
-        except Exception, e:
+        except Exception as e:
             log.error(str(e))
         log.info('AllMyMovies Import: Found file version %s' % version)
         return version

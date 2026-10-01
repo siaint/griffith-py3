@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: macutils.py 1519 2011-02-05 15:32:36Z iznogoud $'
 
 # Copyright (c) 2005-2011 Vasco Nunes, Piotr Ożarowski

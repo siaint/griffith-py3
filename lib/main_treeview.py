@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from six.moves import range
 __revision__ = '$Id: main_treeview.py 1616 2012-01-23 21:07:53Z piotrek $'
 
 # Copyright (c) 2005-2011 Vasco Nunes, Piotr Ożarowski
@@ -28,6 +30,7 @@ from sqlalchemy.sql.expression import Select
 import db
 import gutils
 import sql
+from gi.repository import Gtk, Gdk, GdkPixbuf
 
 log = logging.getLogger("Griffith")
 
@@ -78,7 +81,7 @@ def treeview_clicked(self):
         return False
     if len(self.selected) == 1:
         movie = self.db.session.query(db.Movie).filter_by(number=int(self.selected[0])).first()
-        if self.widgets['poster_window'].flags() & gtk.VISIBLE == gtk.VISIBLE:
+        if self.widgets['poster_window'].get_visible():
             # poster window is visible
             filename = None
             if movie.poster_md5:
@@ -283,7 +286,7 @@ def set_details(self, item=None):  # {{{
         rating_file = "%s/%s0%d.png" % (self.locations['images'], prefix, item['rating'])
     else:
         rating_file = "%s/%s0%d.png" % (self.locations['images'], prefix, 0)
-    handler = w['image_rating'].set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(rating_file))
+    handler = w['image_rating'].set_from_pixbuf(GdkPixbuf.Pixbuf.new_from_file(rating_file))
     gutils.garbage(handler)
 
     # check loan status and adjust buttons and history box
@@ -334,7 +337,7 @@ def set_details(self, item=None):  # {{{
                 self.loans_treemodel.set_value(myiter, 2, person.name)
 
     # volumes/collections
-    if 'volume_id' in item and item['volume_id'] > 0:
+    if getattr(item, 'volume_id', None) is not None and item['volume_id'] > 0:
         if 'volume' in item and item['volume']:
             w['volume'].set_markup("<b>%s</b>" % gutils.html_encode(item['volume'].name))
             w['show_volume_button'].set_sensitive(True)
@@ -344,7 +347,7 @@ def set_details(self, item=None):  # {{{
     else:
             w['volume'].set_text('')
             w['show_volume_button'].set_sensitive(False)
-    if 'collection_id' in item and item['collection_id'] > 0:
+    if getattr(item, 'collection_id', None) is not None and item['collection_id'] > 0:
         if 'collection' in item and item['collection']:
             w['collection'].set_markup("<b>%s</b>" % gutils.html_encode(item['collection'].name))
             w['show_collection_button'].set_sensitive(True)
@@ -367,7 +370,7 @@ def set_details(self, item=None):  # {{{
                     tmp = "%s - %s" % (i.language.name, i.subformat.name)
                 else:
                     tmp = "%s" % i.language.name
-                w['subtitle_vbox'].pack_start(gtk.Label(tmp))
+                w['subtitle_vbox'].pack_start(Gtk.Label(tmp))
             else:
                 language = i.language.name
                 if i.type is not None and len(self._lang_types[i.type]) > 0:
@@ -384,7 +387,7 @@ def set_details(self, item=None):  # {{{
                     tmp = "%s (%s)" % (language, tmp)
                 else:
                     tmp = language
-                widget = gtk.Label(tmp)
+                widget = Gtk.Label(tmp)
                 widget.set_use_markup(True)
                 w['audio_vbox'].pack_start(widget)
     w['audio_vbox'].show_all()
@@ -408,7 +411,10 @@ def populate(self, movies=None, where=None, qf=True):  # {{{
             import advfilter
 
             # saved in advfilter
-            name = self.widgets['filter']['advfilter'].get_active_text()[:-3].decode('utf-8')  # :-3 due to additional '   ' in the name
+            active_text = self.widgets['filter']['advfilter'].get_active_text() or ''
+            name = active_text[:-3] if len(active_text) >= 3 else active_text
+            if isinstance(name, bytes):
+                name = name.decode('utf-8')
             if name:
                 cond = self.db.session.query(db.Filter).filter_by(name=name).first()
                 if not cond:
@@ -455,7 +461,7 @@ def populate(self, movies=None, where=None, qf=True):  # {{{
             for i in where:
                 if i in db.Movie:
                     movies.append_whereclause(db.Movie[i] == where[i])
-        movies = movies.execute().fetchall()
+        movies = self.db.session.execute(movies).fetchall()
 
     self.total = len(movies)
     # disable refreshing while inserting
@@ -466,7 +472,7 @@ def populate(self, movies=None, where=None, qf=True):  # {{{
     sort_column_id, order = self.treemodel.get_sort_column_id()
 
     # new treemodel (faster and prevents some problems)
-    self.treemodel = gtk.TreeStore(str, gtk.gdk.Pixbuf, str, str, str, str, bool, str, str, int, str, str)
+    self.treemodel = Gtk.TreeStore(str, GdkPixbuf.Pixbuf, str, str, str, str, bool, str, str, int, str, str)
 
     # check preferences to hide or show columns
     if self.config.get('number', True, 'mainlist') == True:
@@ -529,7 +535,7 @@ def populate(self, movies=None, where=None, qf=True):  # {{{
     self.widgets['treeview'].set_model(self.treemodel)
     self.widgets['treeview'].thaw_child_notify()
     if self.total:
-        self.widgets['treeview'].set_cursor_on_cell(0)
+        self.widgets['treeview'].set_cursor_on_cell(Gtk.TreePath.new_from_indices([0]))
     self.count_statusbar()
 #}}}
 
@@ -566,11 +572,11 @@ def setmovie(self, movie, iter, treemodel=None):  # {{{
     treemodel.set_value(iter, 4, movie.director)
     treemodel.set_value(iter, 5, movie.genre)
     treemodel.set_value(iter, 6, movie.seen)
-    if movie.year is not None and (isinstance(movie.year, int) or isinstance(movie.year, long)):
+    if movie.year is not None and (isinstance(movie.year, int) or isinstance(movie.year, int)):
         treemodel.set_value(iter, 7, str(movie.year))
-    if movie.runtime is not None and (isinstance(movie.runtime, int) or isinstance(movie.runtime, long)):
+    if movie.runtime is not None and (isinstance(movie.runtime, int) or isinstance(movie.runtime, int)):
         treemodel.set_value(iter, 8, '%003d' % movie.runtime + _(' min'))
-    if movie.rating is not None and (isinstance(movie.rating, int) or isinstance(movie.rating, long)):
+    if movie.rating is not None and (isinstance(movie.rating, int) or isinstance(movie.rating, int)):
         treemodel.set_value(iter, 9, movie.rating)
     if movie.created:
         treemodel.set_value(iter, 10, movie.created.strftime('%Y-%m-%d %H:%M'))

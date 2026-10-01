@@ -1,4 +1,6 @@
 
+from __future__ import absolute_import
+from __future__ import print_function
 import os, sys, glob
 from pyglet.gl import *
 from pyglet import clock
@@ -45,7 +47,7 @@ if __name__ == "__main__":
         config = Config(depth_size=16, double_buffer=True,)
         w = window.Window(width=width, height=height, resizable=True, config=config)
     except window.NoSuchConfigException:
-        print "No multisampling"
+        print("No multisampling")
         # Fall back to no multisampling for old hardware
         w = window.Window(width=width, height=height, resizable=True)
 

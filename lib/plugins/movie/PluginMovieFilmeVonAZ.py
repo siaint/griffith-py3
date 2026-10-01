@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieFilmeVonAZ.py 1651 2013-09-27 19:48:00Z mikej06 $'
 
 # Copyright (c) 2006-2013 Michael Jahn

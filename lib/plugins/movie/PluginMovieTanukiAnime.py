@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieTanukiAnime.py 1090 2008-12-16 20:59:02Z piotrek $'
 
 # Copyright (c) 2005-2007 Piotr Ożarowski
@@ -151,7 +152,7 @@ class SearchPlugin(movie.SearchMovie):
         else:            # multiple matches
             elements = string.split(self.page,"<tr")
             self.number_results = elements[-1]
-            if (elements[0]<>''):
+            if (elements[0]!=''):
                 for element in elements:
                     self.ids.append(gutils.trim(element, 'href="/strony/anime/', '" >'))
                     element = gutils.after(element," >\n\t")

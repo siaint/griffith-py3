@@ -1,4 +1,7 @@
+from __future__ import absolute_import
+from __future__ import print_function
 from math import *
+from six.moves import zip
 
 _time = 0
 
@@ -209,19 +212,19 @@ if __name__ == "__main__":
 
     o = Obj()
     add_time(0)
-    print o.x   # prints out 0.0
+    print(o.x)   # prints out 0.0
     #o.x.anim = animate("linear", start=5., end=10., dt=5) # this doesn't work
     o.x = animate("linear", start=0, end=1, dt=5)
     add_time(2.5)
-    print o.x   # prints out 0.5
+    print(o.x)   # prints out 0.5
     add_time(2.5)
-    print o.x # prints out 1.0
+    print(o.x) # prints out 1.0
     o.x = 10  # Continue the linear interpolation, now from 1 to 10 with a dt of 5
-    print o.x # prints out 1.0
+    print(o.x) # prints out 1.0
     add_time(2.5)
-    print o.x # prints out 5.5
+    print(o.x) # prints out 5.5
     add_time(2.5)
-    print o.x # prints out 10.0
+    print(o.x) # prints out 10.0
     o.x = animate("sine", end=5, dt=5)
 
 

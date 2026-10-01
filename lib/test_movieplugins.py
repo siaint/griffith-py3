@@ -1,5 +1,8 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from __future__ import print_function
+import six
 __revision__ = '$Id: test_movieplugins.py 1651 2013-09-27 19:48:00Z mikej06 $'
 
 # Copyright (c) 2006-2011
@@ -41,7 +44,7 @@ __revision__ = '$Id: test_movieplugins.py 1651 2013-09-27 19:48:00Z mikej06 $'
 #
 
 import gettext
-gettext.install('griffith', unicode=1)
+gettext.install('griffith', six.text_type=1)
 import sys
 import initialize
 import gutils
@@ -51,7 +54,7 @@ import os
 from time import sleep
 try:
     import gtk
-    import gobject
+    from gi.repository import GObject as gobject
 except:
     pass
 
@@ -113,7 +116,7 @@ class PluginTester:
         plugin.search_movies(None)
         plugin.get_searches()
         if not len(plugin.ids) - 1 == cntOriginal:    # first entry is always '' (???)
-            print "Title (Translated): %s - expected: %d - found: %d" % (title, cntOriginal, len(plugin.ids) - 1)
+            print("Title (Translated): %s - expected: %d - found: %d" % (title, cntOriginal, len(plugin.ids) - 1))
             logFile.write("Title (Translated): %s - expected: %d - found: %d\n\n" % (title, cntOriginal, len(plugin.ids) - 1))
             for titleFound in plugin.titles:
                 logFile.write(titleFound)
@@ -121,7 +124,7 @@ class PluginTester:
             logFile.write('\n\n')
             result = False
         # plugin.original_url_search if it is different to plugin.translated_url_search
-        if plugin.original_url_search <> plugin.translated_url_search:
+        if plugin.original_url_search != plugin.translated_url_search:
             plugin.url = plugin.original_url_search
             if plugin.remove_accents:
                 plugin.title = gutils.remove_accents(title, 'utf-8')
@@ -130,7 +133,7 @@ class PluginTester:
             plugin.search_movies(None)
             plugin.get_searches()
             if not len(plugin.ids) - 1 == cntTranslated:    # first entry is always '' (???)
-                print "Title (Original): %s - expected: %d - found: %d" % (title, cntTranslated, len(plugin.ids) - 1)
+                print("Title (Original): %s - expected: %d - found: %d" % (title, cntTranslated, len(plugin.ids) - 1))
                 logFile.write("Title (Original): %s - expected: %d - found: %d\n\n" % (title, cntTranslated, len(plugin.ids) - 1))
                 for titleFound in plugin.titles:
                     logFile.write(titleFound)
@@ -149,7 +152,7 @@ class PluginTester:
         try:
             pluginTestConfig = plugin.SearchPluginTest()
         except:
-            print "Warning: SearchPlugin test could not be executed for %s because of missing configuration class SearchPluginTest." % plugin_name
+            print("Warning: SearchPlugin test could not be executed for %s because of missing configuration class SearchPluginTest." % plugin_name)
             pluginTestConfig = None
 
         if not pluginTestConfig == None:
@@ -228,27 +231,27 @@ class PluginTester:
                 i_val = results_expected[i]
                 if isinstance(i_val, bool):
                     if i_val:
-                        if not results.has_key(i) or len(results[i]) < 1:
-                            print "Test error: %s: Value expected but nothing returned.\nKey: %s" % (movieplugin.movie_id, i)
+                        if i not in results or len(results[i]) < 1:
+                            print("Test error: %s: Value expected but nothing returned.\nKey: %s" % (movieplugin.movie_id, i))
                             logFile.write("Test error: %s: Value expected but nothing returned.\nKey: %s\n\n" % (movieplugin.movie_id, i))
                             result = False
                     else:
-                        if results.has_key(i):
+                        if i in results:
                             if isinstance(results[i], int) and results[i] == 0:
                                 continue
                             if not isinstance(results[i], int) and len(results[i]) < 1:
                                 continue
-                            print "Test error: %s: No value expected but something returned.\nKey: %s\nValue: %s" % (movieplugin.movie_id, i, results[i])
+                            print("Test error: %s: No value expected but something returned.\nKey: %s\nValue: %s" % (movieplugin.movie_id, i, results[i]))
                             logFile.write("Test error: %s: No value expected but something returned.\nKey: %s\nValue: %s\n\n" % (movieplugin.movie_id, i, results[i]))
                             result = False
                 else:
-                    if not results.has_key(i):
-                        print "Test error: %s: Value expected but nothing returned.\nKey: %s" % (movieplugin.movie_id, i)
+                    if i not in results:
+                        print("Test error: %s: Value expected but nothing returned.\nKey: %s" % (movieplugin.movie_id, i))
                         logFile.write("Test error: %s: Value expected but nothing returned.\nKey: %s\n\n" % (movieplugin.movie_id, i))
                         result = False
                     else:
                         if not results[i] == i_val:
-                            print "Test error: %s: Wrong value returned.\nKey: %s\nValue expected: %s\nValue returned: %s" % (movieplugin.movie_id, i, i_val, results[i])
+                            print("Test error: %s: Wrong value returned.\nKey: %s\nValue expected: %s\nValue returned: %s" % (movieplugin.movie_id, i, i_val, results[i]))
                             logFile.write("Test error: %s: Wrong value returned.\nKey: %s\nValue expected: %s\nValue returned: %s\n\n" % (movieplugin.movie_id, i, i_val, results[i]))
                             result = False
             except:
@@ -266,7 +269,7 @@ class PluginTester:
         try:
             pluginTestConfig = plugin.PluginTest()
         except:
-            print "Warning: Plugin test could not be executed for %s because of missing configuration class PluginTest." % plugin_name
+            print("Warning: Plugin test could not be executed for %s because of missing configuration class PluginTest." % plugin_name)
             pluginTestConfig = None
 
         if not pluginTestConfig == None:
@@ -305,7 +308,7 @@ class PluginTester:
         log.debug("config file used: %s", config_name)
         myconfig = config.Config(file=config_name)
         initialize.locations(self, home_dir)
-        gettext.install('griffith', self.locations['i18n'], unicode=1)
+        gettext.install('griffith', self.locations['i18n'], six.text_type=1)
         search_successful = ''
         search_unsuccessful = ''
         get_successful = ''
@@ -338,7 +341,7 @@ class PluginTester:
                 dialog.destroy()
                 if not response == gtk.RESPONSE_YES:
                     continue
-            print "Starting test of plugin: %s" % i
+            print("Starting test of plugin: %s" % i)
             plugin = __import__(i)
             # search test
             if self.do_test_searchplugin(i, False):

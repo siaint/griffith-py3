@@ -1,4 +1,7 @@
 # -*- coding: UTF-8 -*-
+from __future__ import absolute_import
+from __future__ import print_function
+import six
 __all__ = []
 """Python wrapper
 
@@ -75,7 +78,12 @@ __license__ = "Python"
 # Support for BlendedSearch contributed by Alex Choo
 
 from xml.dom import minidom
-import os, sys, getopt, cgi, urllib, string, time
+import os, sys, getopt, six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error, string, time
+try:
+    import html as cgi
+except ImportError:
+    import cgi
+
 import base64
 import hmac
 from hashlib import sha256
@@ -122,10 +130,10 @@ _supportedLocales = {
 
 ## administrative functions
 def version():
-    print """PyAmazon %(__version__)s
+    print("""PyAmazon %(__version__)s
 %(__copyright__)s
 released %(__date__)s
-""" % globals()
+""" % globals())
 
 def setAssociate(associate):
     global ASSOCIATE
@@ -137,8 +145,8 @@ def getAssociate(override=None):
 ## utility functions
 
 def _checkLocaleSupported(locale):
-    if not _supportedLocales.has_key(locale):
-        raise AmazonError, ("Unsupported locale. Locale must be one of: %s" %
+    if locale not in _supportedLocales:
+        raise AmazonError("Unsupported locale. Locale must be one of: %s" %
             string.join(_supportedLocales, ", "))
 
 def setLocale(locale):
@@ -166,7 +174,7 @@ def getLicense(license_key = None):
     for get, location in _licenseLocations:
         rc = get(license_key)
         if rc: return rc
-    raise NoLicenseKey, 'get a license key at http://www.amazon.com/webservices'
+    raise NoLicenseKey('get a license key at http://www.amazon.com/webservices')
 
 def setProxy(http_proxy):
     """set HTTP proxy"""
@@ -210,7 +218,7 @@ def unmarshal(element):
         for child in childElements:
             key = child.tagName
             if hasattr(rc, key):
-                if type(getattr(rc, key)) <> type([]):
+                if type(getattr(rc, key)) != type([]):
                     setattr(rc, key, [getattr(rc, key)])
                 setattr(rc, key, getattr(rc, key) + [unmarshal(child)])
             elif isinstance(child, minidom.Element) and (child.tagName == 'Details' or child.tagName == 'Item'):
@@ -233,7 +241,7 @@ def unmarshal(element):
 
 def buildURL(search_type, searchfield, searchvalue, product_line, type, page, license_key, locale, associate, timestamp = None):
     _checkLocaleSupported(locale)
-    if isinstance(searchvalue, unicode):
+    if isinstance(searchvalue, six.text_type):
         searchvalue = searchvalue.encode('utf-8') # needed for urllib.quote
     url = "http://" + _supportedLocales[locale][1]
     if search_type == 'ItemLookup':
@@ -244,7 +252,7 @@ def buildURL(search_type, searchfield, searchvalue, product_line, type, page, li
             Operation=search_type,
             ResponseGroup=type,
             IdType=searchfield,
-            ItemId=urllib.quote(searchvalue))
+            ItemId=six.moves.urllib.parse.quote(searchvalue))
         if product_line:
             params['SearchIndex'] = product_line
     else:
@@ -255,7 +263,7 @@ def buildURL(search_type, searchfield, searchvalue, product_line, type, page, li
             Operation=search_type,
             ResponseGroup=type,
             Sort='titlerank')
-        params[searchfield] = urllib.quote(searchvalue)
+        params[searchfield] = six.moves.urllib.parse.quote(searchvalue)
         if page:
             params['ItemPage'] = str(page)
         if product_line:
@@ -279,7 +287,7 @@ def getSignedUrl(base_url, params, timestamp = None):
     #params['SignatureVersion']='1'
     
     # Sort the URL parameters by key
-    keys = params.keys()
+    keys = list(params.keys())
     #keys.sort(cmp = lambda x, y: cmp(x.lower(), y.lower()))
     keys.sort()
     
@@ -299,7 +307,7 @@ def getSignedUrl(base_url, params, timestamp = None):
 %s
 /%s/%s
 %s""" % (urlparts[2], urlparts[3], urlparts[4], url_string)
-    url_string = url_string.replace(';', urllib.quote(';'))
+    url_string = url_string.replace(';', six.moves.urllib.parse.quote(';'))
     
     # Sign the request
     hmac.update(string_to_sign)
@@ -371,7 +379,7 @@ def search(search_type, searchfield, searchvalue, product_line, type = "Large", 
     url = buildURL(search_type, searchfield, searchvalue, product_line, type, page, 
             license_key, locale, associate)
     proxies = getProxies(http_proxy)
-    u = urllib.FancyURLopener(proxies)
+    u = six.moves.urllib.request.FancyURLopener(proxies)
     usock = u.open(url)
     xmldoc = minidom.parse(usock)
 
@@ -386,7 +394,7 @@ def search(search_type, searchfield, searchvalue, product_line, type = "Large", 
         data = data.ItemLookupResponse 
 
     if hasattr(data, 'Errors'):
-        raise AmazonError, data.Errors
+        raise AmazonError(data.Errors)
     else:
         if search_type == "BlendedSearch":
             return data 
@@ -419,22 +427,22 @@ def searchByAuthor(author, type="Large", page=1, license_key=None, http_proxy=No
 
 def searchByArtist(artist, product_line="Music", type="Large", page=1, license_key=None, http_proxy=None, locale=None, associate=None):
     if product_line not in ("music", "classical"):
-        raise AmazonError, "product_line must be in ('Music', 'Classical')"
+        raise AmazonError("product_line must be in ('Music', 'Classical')")
     return search("ArtistSearch", 'Keywords', artist, product_line, type, page, license_key, http_proxy, locale, associate)
 
 def searchByActor(actor, product_line="DVD", type="Large", page=1, license_key=None, http_proxy=None, locale=None, associate=None):
     if product_line not in ("DVD", "VHS", "Video"):
-        raise AmazonError, "product_line must be in ('DVD', 'VHS', 'Video')"
+        raise AmazonError("product_line must be in ('DVD', 'VHS', 'Video')")
     return search("ActorSearch", 'Keywords', actor, product_line, type, page, license_key, http_proxy, locale, associate)
 
 def searchByDirector(director, product_line="DVD", type="Large", page=1, license_key=None, http_proxy=None, locale=None, associate=None):
     if product_line not in ("DVD", "VHS", "Video"):
-        raise AmazonError, "product_line must be in ('DVD', 'VHS', 'Video')"
+        raise AmazonError("product_line must be in ('DVD', 'VHS', 'Video')")
     return search("DirectorSearch", 'Keywords', director, product_line, type, page, license_key, http_proxy, locale, associate)
 
 def searchByManufacturer(manufacturer, product_line="pc-hardware", type="Large", page=1, license_key=None, http_proxy=None, locale=None, associate=None):
     if product_line not in ("electronics", "kitchen", "videogames", "software", "photo", "pc-hardware"):
-        raise AmazonError, "product_line must be in ('electronics', 'kitchen', 'videogames', 'software', 'photo', 'pc-hardware')"
+        raise AmazonError("product_line must be in ('electronics', 'kitchen', 'videogames', 'software', 'photo', 'pc-hardware')")
     return search("ManufacturerSearch", 'Keywords', manufacturer, product_line, type, page, license_key, http_proxy, locale, associate)
 
 def searchByListMania(listManiaID, type="Large", page=1, license_key=None, http_proxy=None, locale=None, associate=None):
@@ -462,8 +470,8 @@ if __name__ == "__main__":
     # compare with a generated one from http://associates-amazon.s3.amazonaws.com/signed-requests/helper/index.html
     result = cmp(url, expectedUrl)
     if result == 0:
-        print 'Signed URL generation seems to be ok.'
+        print('Signed URL generation seems to be ok.')
     else:
-        print url
-        print expectedUrl
-        print 'Something seems to be wrong with the signed URL generation.'
+        print(url)
+        print(expectedUrl)
+        print('Something seems to be wrong with the signed URL generation.')

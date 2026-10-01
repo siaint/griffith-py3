@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from __future__ import print_function
 __revision__ = '$Id: gdebug.py 1326 2009-12-01 21:06:05Z mikej06 $'
 
 # Copyright (c) 2009 Vasco Nunes, Piotr Ożarowski
@@ -21,8 +23,14 @@ __revision__ = '$Id: gdebug.py 1326 2009-12-01 21:06:05Z mikej06 $'
 # You may use and distribute this software under the terms of the
 # GNU General Public License, version 2 or later
 
-import gtk
-import pygtk
+# СТАЛО:
+try:
+    import gi
+    gi.require_version('Gtk', '3.0')
+    from gi.repository import Gtk as gtk
+except Exception:
+    gtk = None
+
 import sys
 import string
 import os
@@ -104,7 +112,7 @@ class GriffithDebug:
 #
 class DebugWindow:
     def __init__(self, window):
-        self.dialog = gtk.Dialog('Debug Window', window, gtk.DIALOG_MODAL, ())
+        self.dialog = gtk.Dialog('Debug Window', window, Gtk.DialogFlags.MODAL, ())
         self.dialog.set_destroy_with_parent(True)
         self.dialog.set_transient_for(window)
         self.dialog.set_modal(False)
@@ -201,10 +209,10 @@ class DebugBlackholeBufferRedirector(object):
         try:
             log.info(text)
             self.buffer = string.join([self.buffer, text])
-        except Exception, e:
+        except Exception as e:
             # resetting to old output streams as last hope
             sys.stdout = sys.stderr = self.oldstream
-            print str(e)
+            print(str(e))
     def flush(self):
         if self.debugFileName and self.buffer:
             logfile = open(self.debugFileName, 'at')

@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginExportPDF.py 1648 2013-06-01 18:25:04Z mikej06 $'
 
 # Copyright (c) 2005-2013 Vasco Nunes
@@ -226,7 +227,7 @@ class ExportPlugin(Base):
                             Story.append(p)
                     c.build(Story, onFirstPage=self.page_template, onLaterPages=self.page_template)
                     gutils.info(_('PDF has been created.'), self.parent_window)
-                except Exception, e:
+                except Exception as e:
                     log.exception('')
                     gutils.error(str(e))
 

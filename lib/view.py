@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: view.py 1536 2011-02-12 00:50:13Z iznogoud $'
 
 # Copyright (c) 2005-2009 Vasco Nunes, Piotr Ożarowski

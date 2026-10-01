@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieOnet.py 1390 2010-01-08 11:13:20Z kura666 $'
 
 # Copyright (c) 2005-2006 Piotr Ożarowski
@@ -137,7 +138,7 @@ class SearchPlugin(movie.SearchMovie):
         elements = string.split(self.page, ' class=pic')
         self.number_results = elements[-1]
 
-        if (elements[0]<>''):
+        if (elements[0]!=''):
             for element in elements:
                 self.ids.append(gutils.trim(element, 'class=a2 width="100%"><A href="','" class=u'))
                 element = gutils.trim(element, 'class=u><B>', '</B>')

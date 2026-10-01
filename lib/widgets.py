@@ -1,6 +1,8 @@
 # -*- coding: UTF-8 -*-
 # vim: fdm=marker
 
+from __future__ import absolute_import
+import six
 __revision__ = '$Id: widgets.py 1572 2011-08-23 18:47:22Z mikej06 $'
 
 # Copyright (c) 2005-2011 Vasco Nunes, Piotr Ożarowski
@@ -25,6 +27,10 @@ __revision__ = '$Id: widgets.py 1572 2011-08-23 18:47:22Z mikej06 $'
 import gtk
 import advfilter
 
+class TooltipsCompat:
+    def set_tip(self, widget, text):
+        if widget is not None and hasattr(widget, 'set_tooltip_text'):
+            widget.set_tooltip_text(text)
 
 def define_widgets(self, gladefile):
     get = lambda x: gladefile.get_widget(x)
@@ -38,7 +44,7 @@ def define_widgets(self, gladefile):
     self.widgets['progressbar'] = get('w_progress')    # get from web
     #buttons
     self.widgets['new_db'] = get('new_bt')
-    self.widgets['toolbar'] = get('toolbar1')
+    self.widgets['toolbar'] = get('toolbar2')
 
 
     self.widgets['movie'] = {#{{{
@@ -363,6 +369,22 @@ def define_widgets(self, gladefile):
         'make_cover': get('make_cover'),
         'edit': get('edit1'),
     }#}}}
+    # в lib/widgets.py после блока self.widgets['menu'] = { ... }:
+    if self.widgets['menu']['export'] is None and self.widgets['menu']['menubar']:
+        # Ищем пункт Export в File -> Export
+        for menuitem in self.widgets['menu']['menubar'].get_children():
+            submenu = menuitem.get_submenu()
+            if submenu:
+                for subitem in submenu.get_children():
+                    # проверяем, является ли subitem пунктом экспорта
+                    label = subitem.get_label() or ''
+                    if 'xport' in label or getattr(subitem, 'get_name', lambda: '')() == 'export':
+                        export_sub = subitem.get_submenu()
+                        if not export_sub:
+                            export_sub = Gtk.Menu()
+                            subitem.set_submenu(export_sub)
+                        self.widgets['menu']['export'] = export_sub
+                        break
 
     self.widgets['popups'] = {#{{{
         'main': get('popup'),
@@ -388,7 +410,8 @@ def define_widgets(self, gladefile):
     self.widgets['big_poster'] = get('big_poster')
 
     #add some tooltips
-    self.widgets['tooltips'] = gtk.Tooltips()
+
+    self.widgets['tooltips'] = TooltipsCompat()
     self.widgets['tooltips'].set_tip(self.widgets['preferences']['epdf_reader'], _('Define here the PDF reader you want to use within Griffith. Popular choices are xpdf, gpdf, evince or kpdf. Make sure you have this program installed and working first.'))
     self.widgets['tooltips'].set_tip(self.widgets['preferences']['spell_lang'], _("Here you can define the desired language to use while spell checking some fields. Use you locale setting. For example, to use european portuguese spell checking enter 'pt'"))
     self.widgets['tooltips'].set_tip(self.widgets['preferences']['mail_smtp_server'], _("Use this entry to define the SMTP server you want to use to send e-mails. On *nix systems, 'localhost' should work. Alternatively, you can use your Internet Service Provider's SMTP server address."))
@@ -556,7 +579,7 @@ def populate_results_window(treemodel, items):
     treemodel.clear()
 
     if isinstance(items, dict):
-        iterable = items.iteritems()
+        iterable = six.iteritems(items)
     else:
         iterable = items
 

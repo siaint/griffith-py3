@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
+from __future__ import print_function
 __revision__ = '$Id: gconsole.py 1588 2011-09-14 19:14:08Z mikej06 $'
 
 # Copyright (c) 2005-2009 Vasco Nunes, Piotr Ożarowski
@@ -44,19 +46,24 @@ def check_args():
         default_enc = 'UTF-8'
 
     if os.name == 'nt' or os.name.startswith('win'): # win32, win64
-        from win32com.shell import shellcon, shell
         import shutil
-        home = os.path.join(shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0), u'griffith')
-        # griffith dir location should point to 'Application Data'
-        # this is changed on 0.9.5+svn so we need to make it backward compatible
-        # I think the following lines can be savely removed with version 0.11 or 0.12
-        if not os.path.exists(home):
-            mydocs = os.path.join(shell.SHGetFolderPath(0, shellcon.CSIDL_PERSONAL | 0x4000, 0, 0), u'griffith')
-            if os.path.exists(mydocs):
-                shutil.move(mydocs, home)
+        appdata = os.environ.get('APPDATA')
+        if not appdata:
+            appdata = os.path.expanduser('~')
+        home = os.path.join(appdata, 'griffith')
 
+        # griffith dir location should point to 'Application Data'
+        # backward compatibility check with old My Documents folder
+        if not os.path.exists(home):
+            userprofile = os.environ.get('USERPROFILE', os.path.expanduser('~'))
+            mydocs = os.path.join(userprofile, 'Documents', 'griffith')
+            if os.path.exists(mydocs):
+                try:
+                    shutil.move(mydocs, home)
+                except Exception:
+                    pass
     else:
-        home = os.path.expanduser('~/.griffith').decode(default_enc)
+        home = os.path.expanduser('~/.griffith')
     config = 'griffith.cfg'
 
     if len(sys.argv) > 1:
@@ -73,7 +80,7 @@ def check_args():
                 sys.exit()
             if o in ('-v', '--version'):
                 import version
-                print version.pversion
+                print(version.pversion)
                 sys.exit()
             elif o in ('-D', '--debug'):
                 from platform import platform
@@ -159,7 +166,7 @@ def con_search_movie(self, where, sort=None):
     sort_columns = []
     if sort:
         for i in sort.split(','):
-            if db.metadata.tables['movies'].columns.has_key(i):
+            if i in db.metadata.tables['movies'].columns:
                 sort_columns.append(mt[i])
     else:
         sort_columns = [mt.number]
@@ -179,11 +186,11 @@ def con_search_movie(self, where, sort=None):
 
     movies = statement.execute().fetchall()
     if not movies:
-        print _("No movie found")
+        print(_("No movie found"))
     else:
         for movie in movies:
-            print "\033[31;1m[%s]\033[0m\t\033[38m%s\033[0m (\033[35m%s\033[0m), %s - \033[32m%s\033[0m" % \
-                (movie.number, movie.title, movie.o_title, movie.year, movie.director)
+            print("\033[31;1m[%s]\033[0m\t\033[38m%s\033[0m (\033[35m%s\033[0m), %s - \033[32m%s\033[0m" % \
+                (movie.number, movie.title, movie.o_title, movie.year, movie.director))
     sys.exit()
 
 def check_dependencies():
@@ -199,15 +206,15 @@ def check_dependencies():
             if i['version'] == False or (not isinstance(i['version'], bool) and i['version'].startswith('-')):
                 tmp = None
                 if ostype is not None:
-                    if ostype == 'debian' and i.has_key('debian'):
+                    if ostype == 'debian' and 'debian' in i:
                         tmp = "\n%s package" % i['debian']
-                        if i.has_key('debian_req') and i['debian_req'] is not None:
+                        if 'debian_req' in i and i['debian_req'] is not None:
                             tmp += "\n\tminimum required package version: %s" % i['debian_req']
                 if tmp is None:
                     tmp = "\n%s module" % i['module']
-                    if i.has_key('module_req') and i['module_req'] is not None:
+                    if 'module_req' in i and i['module_req'] is not None:
                         tmp += "\n\tminimum required module version: %s" % i['module_req']
-                    if i.has_key('url'):
+                    if 'url' in i:
                         tmp += "\n\tURL: %s" % i['url']
                 if i['version'] is not False and i['version'].startswith('-'):
                     tmp += "\n\tavailable module version: %s" % i['version'][1:]
@@ -220,41 +227,41 @@ def check_dependencies():
 
     tmp = __print_missing(missing)
     if tmp:
-        print 'Dependencies missing:'
-        print '===================='
-        print tmp
+        print('Dependencies missing:')
+        print('====================')
+        print(tmp)
     tmp = __print_missing(extra)
     if tmp:
-        print '\n\nOptional dependencies missing:'
-        print '============================='
-        print tmp, "\n"
+        print('\n\nOptional dependencies missing:')
+        print('=============================')
+        print(tmp, "\n")
 
 def show_dependencies():
     (missing, extra) = gutils.get_dependencies()
     for i in missing:
-        print "%(module)s :: %(version)s" % i
+        print("%(module)s :: %(version)s" % i)
     for i in extra:
-        print "%(module)s :: %(version)s" % i
+        print("%(module)s :: %(version)s" % i)
 
 def con_usage():
-    print "USAGE:", sys.argv[0], '[OPTIONS]'
-    print "\nOPTIONS:"
-    print "-h, --help\tprints this screen"
-    print "-v, --version\tprints Griffith's version"
-    print "-D, --debug\trun with more debug info"
-    print "-C, --clean\tfind and delete orphan files in posters directory"
-    print "--check-dep\tcheck dependencies"
-    print "--show-dep\tshow dependencies"
-    print "--shell\topen interactive shell"
-    print "--sqlecho\tprint SQL queries"
-    print "--home DIR \tset Griffith's home directory (instead of the default ~/.griffith)"
-    print "\n printing movie list:"
-    print "-c <expr>, --cast=<expr>"
-    print "-d <expr>, --director=<expr>"
-    print "-o <expr>, --original_title=<expr>"
-    print "-t <expr>, --title=<expr>"
-    print "-y <number>, --year=<number>"
-    print "-s <columns>, --sort=<columns>"
+    print("USAGE:", sys.argv[0], '[OPTIONS]')
+    print("\nOPTIONS:")
+    print("-h, --help\tprints this screen")
+    print("-v, --version\tprints Griffith's version")
+    print("-D, --debug\trun with more debug info")
+    print("-C, --clean\tfind and delete orphan files in posters directory")
+    print("--check-dep\tcheck dependencies")
+    print("--show-dep\tshow dependencies")
+    print("--shell\topen interactive shell")
+    print("--sqlecho\tprint SQL queries")
+    print("--home DIR \tset Griffith's home directory (instead of the default ~/.griffith)")
+    print("\n printing movie list:")
+    print("-c <expr>, --cast=<expr>")
+    print("-d <expr>, --director=<expr>")
+    print("-o <expr>, --original_title=<expr>")
+    print("-t <expr>, --title=<expr>")
+    print("-y <number>, --year=<number>")
+    print("-s <columns>, --sort=<columns>")
 
 def run_shell(self):
     import sqlalchemy as sa

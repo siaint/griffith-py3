@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from __future__ import print_function
 __revision__ = '$Id: PluginMovieCineMovies.py 1644 2013-02-21 20:37:27Z mikej06 $'
 
 # Copyright (c) 2005-2011 Vasco Nunes, Piotr Ożarowski
@@ -37,7 +39,7 @@ class Plugin(movie.Movie):
         self.encode   = 'utf-8'
         self.movie_id = id
         self.url      = "http://www.cinemovies.fr/film/" + str(self.movie_id)
-        print self.url
+        print(self.url)
 
     def get_image(self):
         self.image_url = gutils.trim(gutils.trim(self.page, 'property="og:image"', '>'), '"', '"')
@@ -125,7 +127,7 @@ class SearchPlugin(movie.SearchMovie):
         elements = string.split(self.page, '"><a href="http://www.cinemovies.fr/film/')
         self.number_results = elements[-1]
 
-        if (elements[0]<>''):
+        if (elements[0]!=''):
             for element in elements:
                 id = gutils.before(element, '"')
                 title = gutils.clean(gutils.trim(element, '>', '<'))

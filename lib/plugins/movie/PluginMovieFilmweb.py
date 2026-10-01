@@ -1,5 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieFilmweb.py 1615 2012-01-10 20:58:15Z piotrek $'
 
 # Copyright (c) 2005-2012 Piotr Ożarowski

@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: people.py 1388 2010-01-06 21:02:22Z piotrek $'
 
 # Copyright (c) 2005-2009 Vasco Nunes, Piotr Ożarowski
@@ -55,14 +56,14 @@ def add_person_db(self):
             p.name = self.widgets['person']['name'].get_text().decode('utf-8')
             p.email = self.widgets['person']['email'].get_text().decode('utf-8')
             p.phone = gutils.digits_only(self.widgets['person']['phone'].get_text().decode('utf-8'))
-        except ValueError, e:
+        except ValueError as e:
             gutils.warning(e.message)
             return False
         self.widgets['person']['window'].hide()
         self.db.session.add(p)
         try:
             self.db.session.commit()
-        except Exception, e:
+        except Exception as e:
             self.db.session.rollback()
             log.info(str(e))
         else:
@@ -101,13 +102,13 @@ def update_person(self):
         p.name = self.widgets['person']['e_name'].get_text().decode('utf-8')
         p.email = self.widgets['person']['e_email'].get_text().decode('utf-8')
         p.phone = self.widgets['person']['e_phone'].get_text().decode('utf-8')
-    except ValueError, e:
+    except ValueError as e:
         gutils.warning(e.message)
         return False
     self.db.session.add(p)
     try:
         self.db.session.commit()
-    except Exception, e:
+    except Exception as e:
         self.db.session.rollback()
         log.info(str(e))
     else:
@@ -144,7 +145,7 @@ def delete_person(self):
         self.db.session.delete(person)
         try:
             self.db.session.commit()
-        except Exception, e:
+        except Exception as e:
             log.info(str(e))
         else:
             self.p_treemodel.remove(tmp_iter)

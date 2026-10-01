@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+import six
 __revision__ = '$Id: ge_amazon.py 1568 2011-08-10 20:08:12Z mikej06 $'
 
 # Copyright © 2009 Piotr Ożarowski
@@ -24,7 +26,11 @@ __revision__ = '$Id: ge_amazon.py 1568 2011-08-10 20:08:12Z mikej06 $'
 import logging
 import os
 import tempfile
-from urllib import urlcleanup, FancyURLopener, urlretrieve
+from six.moves.urllib.request import urlcleanup, urlretrieve
+try:
+    from urllib.request import FancyURLopener
+except ImportError:
+    from movie import FancyURLopener
 
 import gtk
 from PIL import Image
@@ -34,7 +40,10 @@ from plugins.extensions import GriffithExtensionBase as Base
 from widgets import populate_results_window
 from edit import update_image
 
-import amazon
+try:
+    from . import amazon
+except (ImportError, ValueError):
+    import amazon
 
 log = logging.getLogger('Griffith')
 
@@ -54,11 +63,11 @@ class GriffithExtension(Base):
                    'accesskey': {'name': _('Access Key ID'),
                                  'hint': _('Get your Access Key ID from ') + u'https://affiliate-program.amazon.com/gp/flex/advertising/api/sign-in.html',
                                  'default': u'',
-                                 'type': unicode},
+                                 'type': six.text_type},
                    'secretkey': {'name': _('Secret Key'),
                                  'hint': _('Get your Secret Key from ') + u'https://affiliate-program.amazon.com/gp/flex/advertising/api/sign-in.html',
                                  'default': u'',
-                                 'type': unicode}}
+                                 'type': six.text_type}}
     toolbar_icon = 'ge_amazon.png'
 
     def toolbar_icon_clicked(self, widget, movie):

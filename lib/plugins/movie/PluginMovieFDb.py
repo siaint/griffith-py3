@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieFDb.py 1385 2010-01-06 19:47:44Z kura666 $'
 
 # Copyright (c) 2006-2007 Piotr Ozarowski

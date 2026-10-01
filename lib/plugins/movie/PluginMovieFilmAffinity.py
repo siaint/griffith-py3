@@ -1,5 +1,6 @@
 # -*- coding: iso-8859-15 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieFilmAffinity.py 389 2006-07-29 18:43:35Z piotrek $'
 
 # Copyright (c) 2006-2011 Pedro D. Sánchez
@@ -134,7 +135,7 @@ class SearchPlugin(movie.SearchMovie):
             return None
         auxPage = self.page
         self.sub_search(parent_window)
-        if self.page <> '':
+        if self.page != '':
             return self.page
         auxPage = gutils.trim(auxPage, 'id="main-title"', '</a>')
         self.page = gutils.trim(auxPage, 'es/film', '.html')

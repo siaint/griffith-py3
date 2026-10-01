@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: quick_filter.py 1601 2011-12-12 20:07:03Z mikej06 $'
 
 # Copyright (c) 2005-2009 Vasco Nunes, Piotr Ożarowski
@@ -25,33 +26,39 @@ import gutils
 import db
 
 def change_filter(self):
-    from sqlalchemy import select, or_
+    from sqlalchemy import select
     from sqlalchemy.orm.util import class_mapper, object_mapper
-    statement = select(db.tables.movies.columns, bind=self.db.session.bind)
+    statement = select(*db.tables.movies.columns)
     
-    change_filter_update_whereclause(self, statement)
+    statement=change_filter_update_whereclause(self, statement)
     self.populate_treeview(statement)
 
 
 def change_filter_update_whereclause(self, statement):
     from sqlalchemy import or_
-    text = gutils.gescape(self.widgets['filter']['text'].get_text().decode('utf-8'))
+    raw_text = self.widgets['filter']['text'].get_text()
+    if isinstance(raw_text, bytes):
+        raw_text = raw_text.decode('utf-8')
+    text = gutils.gescape(raw_text)
+
     if text:
         (criterianame, criteria) = self.search_criteria_sorted[self.widgets['filter']['criteria'].get_active()]
         if criteria in ('year', 'runtime', 'media_num', 'rating'):
-            statement.append_whereclause(db.tables.movies.c[criteria]==text)
+            statement = statement.where(db.tables.movies.c[criteria]==text)
         elif criteria == 'any':
             crits = [ ]
             for crit in ( 'director', 'title', 'o_title', 'cameraman', 'cast', 'year', 'screenplay', 'genre', 'studio', 'classification', 'country' ):
                 crits.append(db.tables.movies.c[crit].like('%'+text+'%'))
-            statement.append_whereclause(or_(*crits))
+            statement = statement.where(or_(*crits))
         else:
-            statement.append_whereclause(db.tables.movies.c[criteria].like('%'+text+'%'))
+            statement = statement.where(db.tables.movies.c[criteria].like('%'+text+'%'))
+
     if self.widgets['filter']['text'].is_focus():
         if len(text)<4: # filter mode
             limit = int(self.config.get('limit', 0, section='mainlist'))
             if limit > 0:
-                statement.limit = limit
+                statement = statement.limit(limit)
+    return statement
 
     
 def clear_filter(self, populate=True):

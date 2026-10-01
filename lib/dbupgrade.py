@@ -1,6 +1,9 @@
 # -*- coding: UTF-8 -*-
 # vim: fdm=marker
 
+from __future__ import absolute_import
+from __future__ import print_function
+import six
 __revision__ = '$Id: dbupgrade.py 1596 2011-10-04 18:41:03Z piotrek $'
 
 # Copyright (c) 2005-2009 Vasco Nunes, Piotr Ożarowski
@@ -42,7 +45,7 @@ def upgrade_database(self, version, config):
         log.info('Creating new database...')
         # version is 0 or none only for new databases
         db.metadata.create_all(b)
-        db.tables.configuration.insert(bind=b).execute(param=u'version', value=unicode(self.version))
+        db.tables.configuration.insert(bind=b).execute(param=u'version', value=six.text_type(self.version))
         db.tables.media.insert(bind=b).execute(name=u'DVD')
         db.tables.media.insert(bind=b).execute(name=u'DVD-R')
         db.tables.media.insert(bind=b).execute(name=u'DVD-RW')
@@ -126,7 +129,7 @@ def upgrade_database(self, version, config):
         log.info("Upgrading database to version %d...", version)
         b.execute("UPDATE loans SET return_date='2007-01-01' WHERE return_date='None';")
         db_version = self.session.query(db.Configuration).filter_by(param=u'version').one()
-        db_version.value = unicode(version)
+        db_version.value = six.text_type(version)
         self.session.add(db_version)
         self.session.commit()
     if version == 2:    # fix changes between v2 and v3
@@ -142,7 +145,7 @@ def upgrade_database(self, version, config):
         try:
             db.tables.ratios.insert(bind=b).execute(name=u'16:9')
             db.tables.ratios.insert(bind=b).execute(name=u'4:3')
-        except IntegrityError, e:
+        except IntegrityError as e:
             # if the following conversion of the posters takes to long and the user
             # kills the application the database is in a undefined state which throughs that exception
             log.warn("Cannot add values because they exist already: %s", e)
@@ -161,14 +164,14 @@ def upgrade_database(self, version, config):
         for key, query in queries.items():
             try:
                 self.session.bind.execute(query)
-            except OperationalError, e:
+            except OperationalError as e:
                 if e.message.lower().find('duplicate column name') > -1:
                     log.warn("Cannot add '%s' column because it exists already: %s", key, e)
                     continue
                 else:
                     log.error("Cannot add '%s' column: %s", key, e)
                     return False
-            except Exception, e:
+            except Exception as e:
                 log.error("Cannot add '%s' column: %s", key, e)
                 return False
 
@@ -181,10 +184,10 @@ def upgrade_database(self, version, config):
             if poster_file_name in updated:
                 continue
             if os.path.isfile(poster_file_name):
-                poster_md5 = gutils.md5sum(file(poster_file_name, 'rb'))
+                poster_md5 = gutils.md5sum(open(poster_file_name, 'rb'))
                 poster = self.session.query(db.Poster).filter_by(md5sum=poster_md5).first()
                 if not poster:
-                    poster = db.Poster(md5sum=poster_md5, data=file(poster_file_name, 'rb').read())
+                    poster = db.Poster(md5sum=poster_md5, data=open(poster_file_name, 'rb').read())
                     self.session.add(poster)
 
                 update_query = movies_table.update(movies_table.c.image == movie.image, {'poster_md5': poster_md5, 'image': None}, bind=b)
@@ -197,7 +200,7 @@ def upgrade_database(self, version, config):
                     # it slows down the process a lot, but at least we can skip buggy posters
                     update_query.execute()
                     self.session.commit()
-                except Exception, e:
+                except Exception as e:
                     self.session.rollback()
                     log.error(e)
                 else:
@@ -222,7 +225,7 @@ def upgrade_database(self, version, config):
         del updated
 
         db_version = self.session.query(db.Configuration).filter_by(param=u'version').one()
-        db_version.value = unicode(version)
+        db_version.value = six.text_type(version)
         self.session.add(db_version)
         self.session.commit()
 
@@ -239,12 +242,12 @@ def upgrade_database(self, version, config):
         for key, query in queries.items():
             try:
                 self.session.bind.execute(query)
-            except Exception, e:
+            except Exception as e:
                 log.error("Cannot add '%s' column: %s", key, e)
                 return False
 
         db_version = self.session.query(db.Configuration).filter_by(param=u'version').one()
-        db_version.value = unicode(version)
+        db_version.value = six.text_type(version)
         self.session.add(db_version)
         self.session.commit()
 
@@ -258,7 +261,7 @@ def upgrade_database(self, version, config):
         self.session.bind.execute(query)
 
         db_version = self.session.query(db.Configuration).filter_by(param=u'version').one()
-        db_version.value = unicode(version)
+        db_version.value = six.text_type(version)
         self.session.add(db_version)
         self.session.commit()
 
@@ -276,12 +279,12 @@ def upgrade_database(self, version, config):
         for key, query in queries.items():
             try:
                 self.session.bind.execute(query)
-            except Exception, e:
+            except Exception as e:
                 log.error("Cannot add '%s' column: %s", key, e)
                 return False
 
         db_version = self.session.query(db.Configuration).filter_by(param=u'version').one()
-        db_version.value = unicode(version)
+        db_version.value = six.text_type(version)
         self.session.add(db_version)
         self.session.commit()
 
@@ -338,13 +341,13 @@ def convert_from_old_db(config, source_file, destination_file, locations):    #{
 
     try:
         old_db = sqlite.connect(source_file)
-    except sqlite.DatabaseError, e:
+    except sqlite.DatabaseError as e:
         if str(e) == 'file is encrypted or is not a database':
-            print 'Your database is most probably in SQLite2 format, please convert it to SQLite3:'
-            print '$ sqlite ~/.griffith/griffith.gri .dump | sqlite3 ~/.griffith/griffith.gri3'
-            print '$ mv ~/.griffith/griffith.gri{,2}'
-            print '$ mv ~/.griffith/griffith.gri{3,}'
-            print 'or install pysqlite in version 1.0'
+            print('Your database is most probably in SQLite2 format, please convert it to SQLite3:')
+            print('$ sqlite ~/.griffith/griffith.gri .dump | sqlite3 ~/.griffith/griffith.gri3')
+            print('$ mv ~/.griffith/griffith.gri{,2}')
+            print('$ mv ~/.griffith/griffith.gri{3,}')
+            print('or install pysqlite in version 1.0')
             gutils.warning(_("Your database is most probably in SQLite2 format, please convert it to SQLite3"))
         else:
             raise
@@ -407,7 +410,7 @@ def convert_from_old_db(config, source_file, destination_file, locations):    #{
         try:
             new_db.session.add(o)
             new_db.session.commit()
-        except Exception, e:
+        except Exception as e:
             log.error(e)
             continue
         collection_mapper[i[0]] = o.collection_id
@@ -420,7 +423,7 @@ def convert_from_old_db(config, source_file, destination_file, locations):    #{
         try:
             new_db.session.add(o)
             new_db.session.commit()
-        except Exception, e:
+        except Exception as e:
             log.error(e)
             continue
         volume_mapper[i[0]] = o.volume_id
@@ -433,7 +436,7 @@ def convert_from_old_db(config, source_file, destination_file, locations):    #{
         try:
             new_db.session.add(o)
             new_db.session.commit()
-        except Exception, e:
+        except Exception as e:
             log.error(e)
             continue
         person_mapper[i[0]] = o.person_id
@@ -450,7 +453,7 @@ def convert_from_old_db(config, source_file, destination_file, locations):    #{
             try:
                 new_db.session.add(o)
                 new_db.session.commit()
-            except Exception, e:
+            except Exception as e:
                 log.error(e)
                 continue
             language_mapper[i[0]] = o.lang_id
@@ -467,7 +470,7 @@ def convert_from_old_db(config, source_file, destination_file, locations):    #{
             try:
                 new_db.session.add(o)
                 new_db.session.commit()
-            except Exception, e:
+            except Exception as e:
                 log.error(e)
                 continue
             medium_mapper[i[0]] = o.medium_id
@@ -484,7 +487,7 @@ def convert_from_old_db(config, source_file, destination_file, locations):    #{
             try:
                 new_db.session.add(o)
                 new_db.session.commit()
-            except Exception, e:
+            except Exception as e:
                 log.error(e)
                 continue
             tag_mapper[i[0]] = o.tag_id
@@ -534,7 +537,7 @@ def convert_from_old_db(config, source_file, destination_file, locations):    #{
         try:
             new_db.session.add(o)
             new_db.session.commit()
-        except Exception, e:
+        except Exception as e:
             log.error(e)
             continue
         movie_mapper[i[0]] = o.movie_id
@@ -550,7 +553,7 @@ def convert_from_old_db(config, source_file, destination_file, locations):    #{
             try:
                 new_db.session.add(m)
                 new_db.session.commit()
-            except Exception, e:
+            except Exception as e:
                 log.error(e)
                 continue
 
@@ -565,7 +568,7 @@ def convert_from_old_db(config, source_file, destination_file, locations):    #{
             try:
                 new_db.session.add(m)
                 new_db.session.commit()
-            except Exception, e:
+            except Exception as e:
                 log.error(e)
                 continue
 
@@ -578,13 +581,13 @@ def convert_from_old_db(config, source_file, destination_file, locations):    #{
         if int(i[2]) > 0:
             try:
                 vol = new_db.session.query(db.Volume).filter_by(volume_id=volume_mapper[i[2]]).one()
-            except Exception, e:
+            except Exception as e:
                 log.error(e)
                 continue
         if int(i[3]) > 0:
             try:
                 col = new_db.session.query(db.Collection).filter_by(collection_id=collection_mapper[i[3]]).one()
-            except Exception, e:
+            except Exception as e:
                 log.error(e)
                 continue
         if int(i[1]) == 0:
@@ -598,7 +601,7 @@ def convert_from_old_db(config, source_file, destination_file, locations):    #{
         else:
             try:
                 m = new_db.session.query(db.Movie).filter_by(movie_id=movie_mapper[i[1]]).one()
-            except Exception, e:
+            except Exception as e:
                 log.error(e)
                 continue
 
@@ -627,7 +630,7 @@ def convert_from_old_db(config, source_file, destination_file, locations):    #{
         try:
             new_db.session.add(m)
             new_db.session.commit()
-        except Exception, e:
+        except Exception as e:
             log.error(e)
             continue
     #clear_mappers()

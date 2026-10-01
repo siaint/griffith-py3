@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from gi.repository import GdkPixbuf
 __revision__ = '$Id$'
 
 # Copyright © 2010 Michael Jahn
@@ -24,7 +26,8 @@ __revision__ = '$Id$'
 import os
 import re
 import logging
-from urllib import quote, urlcleanup
+from six.moves.urllib.parse import quote
+from six.moves.urllib.request import urlcleanup
 import gtk
 import gutils
 from edit import update_image_from_memory
@@ -156,7 +159,7 @@ class PosterResultsViewer():
             self.webaccess.unprepare()
 
     def _loadimagetopixbuf(self, data):
-        loader = gtk.gdk.PixbufLoader()
+        loader = GdkPixbuf.PixbufLoader()
         loader.write(data, len(data))
         loader.close()
         return loader.get_pixbuf()

@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+import six
 __revision__ = '$Id: movie.py 1655 2013-11-12 21:52:22Z mikej06 $'
 
 # Copyright (c) 2005-2009 Vasco Nunes, Piotr Ożarowski
@@ -31,7 +33,24 @@ import time
 from urllib import *
 import gtk
 import gutils
-import urllib2
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
+import urllib.request
+
+try:
+    from urllib.request import FancyURLopener
+except ImportError:
+    class FancyURLopener:
+        def __init__(self, *args, **kwargs):
+            self.version = "Mozilla/5.0"
+        def open(self, fullurl, data=None):
+            req = urllib.request.Request(fullurl, headers={'User-Agent': self.version})
+            return urllib.request.urlopen(req)
+        def retrieve(self, url, filename=None, reporthook=None, data=None):
+            req = urllib.request.Request(url, headers={'User-Agent': self.version})
+            with urllib.request.urlopen(req) as resp, open(filename, 'wb') as out_file:
+                out_file.write(resp.read())
+            return filename, None
+
 
 log = logging.getLogger("Griffith")
 
@@ -153,7 +172,7 @@ class Movie(object):
     def get_movie(self, parent_window=None):
         try:
             # check for internet connection
-            urllib2.urlopen("http://www.google.com")
+            six.moves.urllib.request.urlopen("http://www.google.com")
             #
             # initialize the progress dialog once for the following loading process
             #
@@ -192,7 +211,7 @@ class Movie(object):
         try:
             if retriever.exception is None:
                 if retriever.html:
-                    ifile = file(retriever.html[0], "rb")
+                    ifile = open(retriever.html[0], "rb")
                     try:
                         data = ifile.read()
                     finally:
@@ -204,7 +223,7 @@ class Movie(object):
                         # try to decode it strictly
                         if self.encode:
                             data = data.decode(self.encode)
-                    except UnicodeDecodeError, exc:
+                    except UnicodeDecodeError as exc:
                         # something is wrong, perhaps a wrong character set
                         # or some pages are not as strict as they should be
                         # (like OFDb, mixes utf8 with iso8859-1)
@@ -268,19 +287,19 @@ class Movie(object):
             if 'cast' in fields:
                 self.get_cast()
                 self.cast = gutils.clean(self.cast)
-                if not isinstance(self.cast, unicode):
+                if not isinstance(self.cast, six.text_type):
                     self.cast = gutils.gdecode(self.cast, self.encode)
                 fields.pop(fields.index('cast'))
             if 'plot' in fields:
                 self.get_plot()
                 self.plot = gutils.clean(self.plot)
-                if not isinstance(self.plot, unicode):
+                if not isinstance(self.plot, six.text_type):
                     self.plot = gutils.gdecode(self.plot, self.encode)
                 fields.pop(fields.index('plot'))
             if 'notes' in fields:
                 self.get_notes()
                 self.notes = gutils.clean(self.notes)
-                if not isinstance(self.notes, unicode):
+                if not isinstance(self.notes, six.text_type):
                     self.notes = gutils.gdecode(self.notes, self.encode)
                 fields.pop(fields.index('notes'))
             if 'image' in fields:
@@ -291,7 +310,7 @@ class Movie(object):
             for i in fields:
                 getattr(self, "get_%s" % i)()
                 self[i] = gutils.clean(self[i])
-                if not isinstance(self[i], unicode):
+                if not isinstance(self[i], six.text_type):
                     self[i] = gutils.gdecode(self[i], self.encode)
 
             if 'o_title' in self.fields_to_fetch and self.o_title is not None:
@@ -375,7 +394,7 @@ class SearchMovie(object):
                     # don't care about the content
                     return True
                 if retriever.html:
-                    ifile = file(retriever.html[0], 'rb')
+                    ifile = open(retriever.html[0], 'rb')
                     try:
                         self.page = ifile.read()
                     finally:
@@ -432,7 +451,7 @@ class Retriever(threading.Thread):
                     self.html = urlretrieve(self.URL, self.destination, self.hook)
             if self.progress.status:
                 self.html = []
-        except Exception, e:
+        except Exception as e:
             log.exception('')
             self.exception = e
 
@@ -473,8 +492,8 @@ def urlretrieve2(url, filename=None, reporthook=None, data=None):
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache',
         'Accept-Encoding': 'gzip'}
-    req = urllib2.Request(url, data, headers)
-    response = urllib2.urlopen(req)
+    req = six.moves.urllib.request.Request(url, data, headers)
+    response = six.moves.urllib.request.urlopen(req)
     if not filename:
         import tempfile
         (fd, filename) = tempfile.mkstemp()
@@ -483,7 +502,7 @@ def urlretrieve2(url, filename=None, reporthook=None, data=None):
         _tempfilecleanup._tempfiles.append(filename)
         tfp = os.fdopen(fd, 'wb')
     else:
-        tfp = file(filename, 'wb')
+        tfp = open(filename, 'wb')
     while 1:
         block = response.read(4096)
         if block == "":

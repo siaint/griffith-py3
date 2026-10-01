@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieStopklatka.py 1383 2010-01-05 21:04:00Z mikej06 $'
 
 # Copyright (c) 2005-2010 Piotr Ożarowski

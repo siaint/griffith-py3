@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
+import six
 __revision__ = '$Id: PluginMovieAniDB.py 1633 2012-12-28 23:11:42Z mikej06 $'
 
 # Copyright © 2005-2011 Piotr Ożarowski
@@ -21,7 +23,7 @@ __revision__ = '$Id: PluginMovieAniDB.py 1633 2012-12-28 23:11:42Z mikej06 $'
 # You may use and distribute this software under the terms of the
 # GNU General Public License, version 2 or later
 
-import urllib2
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 import logging
 from datetime import datetime, timedelta
 from locale import getdefaultlocale
@@ -161,7 +163,7 @@ class Plugin(Movie):
             airdate = node.find('airdate')
             airdate = airdate.text if airdate is not None else None
             episodes[key] = dict(titles=titles, duration=duration, airdate=airdate)
-        for key, details in sorted(episodes.iteritems()):
+        for key, details in sorted(six.iteritems(episodes)):
             self.notes += "\n%s: " % key
             self.notes += details['titles'].get(lang, details['titles']['en'])
             self.notes += " (%s" % details['duration']
@@ -185,7 +187,7 @@ class SearchPlugin(SearchMovie):
             if cache_last_modified > datetime.now() - timedelta(days=1):
                 download = False
             else:
-                remote = urllib2.urlopen(ANIME_TITLES_URL)
+                remote = six.moves.urllib.request.urlopen(ANIME_TITLES_URL)
                 last_modified = datetime(*remote.info().getdate('Last-Modified')[:7])
                 if cache_last_modified >= last_modified:
                     download = False

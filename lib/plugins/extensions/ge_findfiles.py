@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from __future__ import print_function
 __revision__ = '$Id$'
 
 # Copyright © 2010
@@ -43,5 +45,5 @@ class GriffithExtension(Base):
     def toolbar_icon_clicked(self, widget, movie):
         import kaa.metadata
         info = kaa.metadata.parse('D:\\test.flv')#
-        print info
+        print(info)
         disc = kaa.metadata.parse('/dev/dvd')

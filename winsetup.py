@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: winsetup.py 1623 2012-04-10 21:41:37Z mikej06 $'
 
 # Copyright © 2005-2010 Vasco Nunes, Piotr Ożarowski

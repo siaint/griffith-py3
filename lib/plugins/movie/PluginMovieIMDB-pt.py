@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id$'
 
 # Copyright (c) 2011 Ivo Nunes
@@ -25,7 +26,7 @@ import gutils
 import movie
 import string
 import re
-import urllib
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 
 plugin_name         = "IMDb-pt"
 plugin_description  = "Internet Movie Database Portuguese"

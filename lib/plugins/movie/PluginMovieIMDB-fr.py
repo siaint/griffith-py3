@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id$'
 
 # Copyright (c) 2012 CinéphOli
@@ -148,7 +149,7 @@ class Plugin(movie.Movie):
             if result:
                 try:
                     self.rating = round(float(result), 0)
-                except Exception, e:
+                except Exception as e:
                     self.rating = 0
         else:
             self.rating = 0

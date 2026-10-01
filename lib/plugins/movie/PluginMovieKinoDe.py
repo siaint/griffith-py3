@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from six.moves import range
 __revision__ = '$Id: PluginMovieKinoDe.py 1643 2013-02-21 19:51:43Z mikej06 $'
 
 # Copyright (c) 2006-2011
@@ -221,7 +223,7 @@ class SearchPlugin(movie.SearchMovie):
         elements = re.split('class="alice-teaser-link', self.page)
         elements[0] = None
         for element in elements:
-            if element <> None:
+            if element != None:
                 element = gutils.trim(element, 'href="', '</a>')
                 url = gutils.before(element, '"')
                 if url[0] == '/':

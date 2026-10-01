@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieHKMDB.py 1633 2012-12-28 23:11:42Z mikej06 $'
 
 # Copyright (c) 2010 Michael Jahn
@@ -150,9 +151,9 @@ class SearchPlugin(movie.SearchMovie):
             elements = string.split(self.page, '<a href="/db/movies/view.mhtml?id=')
             elements[0] = ''
             for element in elements:
-                if element <> '' and string.find(element, 'display_set=eng') > -1:
+                if element != '' and string.find(element, 'display_set=eng') > -1:
                     id = gutils.before(gutils.before(element, '"'), '&')
-                    if id <> '':
+                    if id != '':
                         self.ids.append(id)
                         self.titles.append(gutils.trim(element, '>', '</a>'))
 

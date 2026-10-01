@@ -1,5 +1,7 @@
+from gi.repository import GdkPixbuf
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: about.py 1519 2011-02-05 15:32:36Z iznogoud $'
 
 # Copyright (c) 2005-2011 Vasco Nunes, Piotr Ożarowski
@@ -82,7 +84,7 @@ class AboutDialog:
             translator_credits = _("See TRANSLATORS file")
         dialog.set_translator_credits(translator_credits)
         logo_file = os.path.abspath(os.path.join(IMAGES_DIR, 'griffith.png'))
-        logo = gtk.gdk.pixbuf_new_from_file(logo_file)
+        logo = GdkPixbuf.Pixbuf.new_from_file(logo_file)
         dialog.set_logo(logo)
         if os.path.isfile('/usr/share/common-licenses/GPL-2'):
             dialog.set_license(open('/usr/share/common-licenses/GPL-2').read())

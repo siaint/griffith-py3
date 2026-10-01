@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieIMDB.py 1660 2014-03-13 20:48:05Z mikej06 $'
 
 # Copyright (c) 2005-2013 Vasco Nunes, Piotr Ożarowski
@@ -121,10 +122,10 @@ class Plugin(movie.Movie):
         plotlist = string.split(gutils.trim(self.plot_page, 'id="plot-summaries-content">', '</ul>'), '<li')
         plotcompilation = ''
         for listelement in plotlist:
-            if listelement <> '' and not 'It looks like we don\'t have any Plot Summaries for this title yet.' in listelement:
+            if listelement != '' and not 'It looks like we don\'t have any Plot Summaries for this title yet.' in listelement:
                 plotcompilation = plotcompilation + gutils.trim(listelement, '<p>', '</p>') + '\n'
                 plotcompilation = plotcompilation + re.sub('<[^<]+?>', '', gutils.trim(listelement, '<div class="author-container">', '</div>').replace('\n','').lstrip()) + '\n\n'
-        if plotcompilation <> '':
+        if plotcompilation != '':
             self.plot = plotcompilation
         else:
             self.plot = gutils.regextrim(self.page, 'itemprop="description"', '<')
@@ -136,7 +137,7 @@ class Plugin(movie.Movie):
                 self.plot = self.plot + '\n\n'
                 elements[0] = ''
                 for element in elements[1:]:
-                    if element <> '':
+                    if element != '':
                         self.plot = self.plot + gutils.strip_tags(gutils.before(element, '</a>')) + '\n\n'
 
     def get_year(self):
@@ -214,7 +215,7 @@ class Plugin(movie.Movie):
         if self.rating:
             try:
                 self.rating = round(float(self.rating), 0)
-            except Exception, e:
+            except Exception as e:
                 self.rating = 0
         else:
             self.rating = 0

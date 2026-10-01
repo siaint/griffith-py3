@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id$'
 
 # Copyright (c) 2010
@@ -25,8 +26,8 @@ import logging
 import string
 import threading
 import time
-import urllib2
-import cookielib
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
+import six.moves.http_cookiejar
 import gtk
 import gutils
 
@@ -81,7 +82,7 @@ class WebAccess(object):
                 # try to decode it strictly
                 if encoding:
                     data = data.decode(encoding)
-            except UnicodeDecodeError, e:
+            except UnicodeDecodeError as e:
                 # something is wrong, perhaps a wrong character set
                 # or some pages are not as strict as they should be
                 # (like OFDb, mixes utf8 with iso8859-1)
@@ -114,7 +115,7 @@ class Retriever(threading.Thread):
         self._stopevent = threading.Event()
         self._sleepperiod = 1.0
         if not _cookiejar:
-            _cookiejar = cookielib.LWPCookieJar(policy = cookielib.DefaultCookiePolicy())
+            _cookiejar = six.moves.http_cookiejar.LWPCookieJar(policy = six.moves.http_cookiejar.DefaultCookiePolicy())
         self.cj = _cookiejar
         threading.Thread.__init__(self, name = "Retriever")
 
@@ -151,7 +152,7 @@ class Retriever(threading.Thread):
             log.debug('Fetching URL: %s' % url)
             if data:
                 log.debug('POST data: %s' % data)
-            req = urllib2.Request(url, data, headers)
+            req = six.moves.urllib.request.Request(url, data, headers)
             response = opener.open(req)
         except:
             log.exception('')
@@ -192,7 +193,7 @@ class Retriever(threading.Thread):
         }
 
     def create_opener(self):
-        return urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cj))
+        return six.moves.urllib.request.build_opener(six.moves.urllib.request.HTTPCookieProcessor(self.cj))
 
     def try_decompress(self, data):
         # check for gzip compressed pages
@@ -207,7 +208,7 @@ class Progress:
         self.status = False
         self.dialog = gtk.Dialog(title, window, gtk.DIALOG_MODAL, ())
         self.dialog.set_urgency_hint(False)
-        self.dialog.set_position(gtk.WIN_POS_CENTER)
+        self.dialog.set_position(Gtk.WindowPosition.CENTER)
         self.dialog.stick()
         self.label = gtk.Label()
         self.label.set_markup(message)

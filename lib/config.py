@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+import six
 __revision__ = '$Id: config.py 1632 2012-12-16 21:15:57Z mikej06 $'
 
 # Copyright © 2005-2011 Vasco Nunes, Piotr Ożarowski
@@ -22,7 +24,7 @@ __revision__ = '$Id: config.py 1632 2012-12-16 21:15:57Z mikej06 $'
 # GNU General Public License, version 2 or later
 
 import os
-import ConfigParser
+import configparser
 import logging
 log = logging.getLogger("Griffith")
 
@@ -43,15 +45,15 @@ class Config(object):
         if not self._cfg.has_option(section, option):
             return default
         else:
-            value = self._cfg.get(section, option, False)
+            value = self._cfg.get(section, option, raw=False)
             value = value.replace('%%', '%')
             value = Config.subst.get(value, value) # replace 'True' etc.
             return value
 
     def set(self, option, value, section='main'):
-        if not isinstance(option, basestring):
+        if not isinstance(option, six.string_types):
             option = str(option)
-        if not isinstance(value, basestring):
+        if not isinstance(value, six.string_types):
             value = str(value)
         if not self._cfg.has_section(section):
             self._cfg.add_section(section)
@@ -94,10 +96,10 @@ class Config(object):
 
     def load(self):
         if os.path.isfile(self._file):
-            self._cfg = ConfigParser.SafeConfigParser()
+            self._cfg = configparser.ConfigParser()
             try:
                 self._cfg.read(self._file)
-            except Exception, e:
+            except Exception as e:
                 log.debug(str(e))
                 log.error('Cannot parse config file')
                 return False
@@ -142,7 +144,7 @@ class Config(object):
             return False
 
     def make_defaults(self):
-        self._cfg = ConfigParser.SafeConfigParser()
+        self._cfg = six.moves.configparser.ConfigParser()
         self._cfg.read(self._file)
         self._cfg.add_section('database')
         self._cfg.add_section('defaults')

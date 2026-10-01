@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieCSFD.py 12 2011-05-22 08:37:14Z KamilHanus $'
 # Copyright (c) 2011 Kamil Hanus
 #

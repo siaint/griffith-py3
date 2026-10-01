@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: preferences.py 1597 2011-10-04 18:41:24Z piotrek $'
 
 # Copyright (c) 2005-2009 Vasco Nunes, Piotr Ożarowski
@@ -24,6 +25,7 @@ __revision__ = '$Id: preferences.py 1597 2011-10-04 18:41:24Z piotrek $'
 import logging
 import os
 import gtk
+from gi.repository import Gtk
 
 import db
 import gutils
@@ -455,11 +457,11 @@ def save_preferences(self):
         preferenceswidgets = plugins.extensions.by_name[ext_name].preferenceswidgets
         for prefname in preferenceswidgets:
             widget = preferenceswidgets[prefname]
-            if isinstance(widget, gtk.CheckButton):
+            if isinstance(widget, Gtk.CheckButton):
                 value = widget.get_active()
-            elif isinstance(widget, gtk.Entry):
+            elif isinstance(widget, Gtk.Entry):
                 value = widget.get_text()
-            elif isinstance(widget, gtk.ComboBox):
+            elif isinstance(widget, Gtk.ComboBox):
                 iter = widget.get_active_iter()
                 if iter:
                     value = widget.get_model().get_value(iter, 1)
@@ -499,12 +501,12 @@ def save_preferences(self):
 
         # new database connection
         self.initialized = False
-        if c.has_key('posters'):
+        if 'posters' in c:
             c['posters'] = None # force update
         try:
             self.db.dispose()
             self.db = sql.GriffithSQL(c, self.locations['home'], fallback=True)
-        except InvalidRequestError, e:
+        except InvalidRequestError as e:
             log.exception('')
             c.set('type', 'sqlite', section='database')
             w['db_type'].set_active(0)

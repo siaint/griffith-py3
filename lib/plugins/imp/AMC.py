@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: AMC.py 1605 2011-12-18 22:35:25Z piotrek $'
 
 # Copyright (c) 2009
@@ -140,7 +141,7 @@ class ImportPlugin(IP):
                 count = count + 1
         except EOFError:
             pass
-        except Exception, e:
+        except Exception as e:
             log.error(str(e))
         finally:
             ifile.close()
@@ -204,7 +205,7 @@ class ImportPlugin(IP):
                     details['rating'] = round(float(details['rating']) / 10.0, 0)
         except EOFError:
             details = None
-        except Exception, e:
+        except Exception as e:
             log.error(str(e))
             details = None
         return details

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
+from six.moves import range
 __revision__ = '$Id: WintoolzFilmdatenbank.py 1605 2011-12-18 22:35:25Z piotrek $'
 
 # Copyright (c) 2009
@@ -155,7 +157,7 @@ class ImportPlugin(IP):
                 details['seen'] = currentrow[25]
             if currentrow[26] and currentrow[26] == 'Schwarz-Weiss':
                 details['color'] = 2
-        except Exception, e:
+        except Exception as e:
             log.exception('')
             details = None
 
@@ -178,7 +180,7 @@ class ImportPlugin(IP):
             self.connection = sqlite3.connect(self.filename)
             if self.connection.execute('PRAGMA table_info(Main)').fetchone():
                 version = 1.0
-        except Exception, e:
+        except Exception as e:
             log.error(str(e))
         log.info('wintoolz Filmdatenbank Import: Found file version %s' % version)
         return version

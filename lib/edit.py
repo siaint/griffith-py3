@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from gi.repository import GdkPixbuf
 __revision__ = '$Id: edit.py 1619 2012-01-29 19:11:45Z mikej06 $'
 
 # Copyright © 2005-2011 Vasco Nunes, Piotr Ożarowski
@@ -45,7 +47,7 @@ def change_poster(self):
     return change_poster_select_file(self, number)
 
 def update_image(self, number, filename):
-    imagedata = file(filename, 'rb').read()
+    imagedata = open(filename, 'rb').read()
     return update_image_from_memory(self, number, imagedata)
 
 def change_poster_select_file(self, number, handler = update_image):
@@ -67,12 +69,12 @@ def change_poster_select_file(self, number, handler = update_image):
 def update_image_from_memory(self, number, data):
     session = self.db.Session()
     try:
-        loader = gtk.gdk.PixbufLoader()
+        loader = GdkPixbuf.PixbufLoader()
         loader.write(data, len(data))
         loader.close()
         self.widgets['movie']['picture'].set_from_pixbuf(\
-                loader.get_pixbuf().scale_simple(100, 140, gtk.gdk.INTERP_BILINEAR))
-    except Exception, e:
+                loader.get_pixbuf().scale_simple(100, 140, GdkPixbuf.InterpType.BILINEAR))
+    except Exception as e:
         log.error(str(e))
         gutils.error(_("Image is not valid."), self.widgets['window'])
         return False
@@ -96,7 +98,7 @@ def update_image_from_memory(self, number, data):
     session.add(movie)
     try:
         session.commit()
-    except Exception, e:
+    except Exception as e:
         session.rollback()
         log.error("cannot add poster to database: %s" % e)
         return False
@@ -129,7 +131,7 @@ def delete_poster(self, movie_id = None):
         session.add(movie)
         try:
             session.commit()
-        except Exception, e:
+        except Exception as e:
             session.rollback()
             log.error("cannot delete poster: %s" % e)
             return False
@@ -137,7 +139,7 @@ def delete_poster(self, movie_id = None):
         if self._movie_id == movie_id:
             # only if the current selected movie is the same like that one for removing poster
             image_path = gutils.get_defaultimage_fname(self)
-            handler = self.widgets['movie']['picture'].set_from_pixbuf(gtk.gdk.pixbuf_new_from_file(image_path))
+            handler = self.widgets['movie']['picture'].set_from_pixbuf(GdkPixbuf.Pixbuf.new_from_file(image_path))
             gutils.garbage(handler)
             self.widgets['add']['delete_poster'].set_sensitive(False)
             self.widgets['movie']['picture_button'].set_sensitive(False)

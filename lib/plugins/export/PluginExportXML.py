@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+import six
 __revision__ = '$Id: PluginExportXML.py 1533 2011-02-08 21:04:38Z iznogoud $'
 
 # Copyright (c) 2005-2007 Vasco Nunes, Piotr Ożarowski
@@ -82,7 +84,7 @@ class ExportPlugin(Base):
                         elif movie[key] in (True, False):
                             value = str(int(movie[key]))
                         else:
-                            if movie[key] is unicode:
+                            if movie[key] is six.text_type:
                                 value = movie[key].encode('utf-8')
                             else:
                                 value = str(movie[key])

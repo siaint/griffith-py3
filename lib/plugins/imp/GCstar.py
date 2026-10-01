@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: GCstar.py 1605 2011-12-18 22:35:25Z piotrek $'
 
 # Copyright (c) 2009
@@ -66,7 +67,7 @@ class ImportPlugin(IP):
             try:
                 collectionElement = self.filedom.getElementsByTagName('collection')[0]
                 count = int(collectionElement.getAttribute('items'))
-            except Exception, e:
+            except Exception as e:
                 log.error(str(e))
         else:
             log.error('No filedom object.')
@@ -157,7 +158,7 @@ class ImportPlugin(IP):
                     details['cast'] = cast
         except EOFError:
             details = None
-        except Exception, e:
+        except Exception as e:
             log.error(str(e))
             details = None
         self.itemindex = self.itemindex + 1
@@ -185,7 +186,7 @@ class ImportPlugin(IP):
             type = collectionElement.getAttribute('type')
             if type == 'GCfilms':
                 version = collectionElement.getAttribute('version')
-        except Exception, e:
+        except Exception as e:
             log.error(str(e))
             self.filedom.unlink()
             self.filedom = None

@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: loan.py 1522 2011-02-05 19:59:38Z iznogoud $'
 
 # Copyright (c) 2005-2009 Vasco Nunes, Piotr Ożarowski
@@ -76,7 +77,7 @@ def commit(self):
     try:
         if movie.loan_to(person, whole_collection=loan_whole_collection):
             session.commit()
-    except Exception, e:
+    except Exception as e:
         session.rollback()
         if e.message == 'loaned movies in the collection already':
             gutils.warning(_("Collection contains loaned movie.\nLoan aborted!"))

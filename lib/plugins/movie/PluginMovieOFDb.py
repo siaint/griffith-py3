@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from __future__ import print_function
 __revision__ = '$Id: PluginMovieOFDb.py 1641 2013-01-30 12:24:47Z mikej06 $'
 
 # Written by Christian Sagmueller <christian@sagmueller.net>
@@ -131,7 +133,7 @@ class Plugin(movie.Movie):
         if self.rating:
             try:
                 self.rating = round(float(self.rating), 0)
-            except Exception, e:
+            except Exception as e:
                 self.rating = 0
         else:
             self.rating = 0
@@ -159,7 +161,7 @@ class SearchPlugin(movie.SearchMovie):
     def search(self,parent_window):
         if not self.open_search(parent_window):
             return None
-        print self.url
+        print(self.url)
         self.page = gutils.trim(self.page,"</b><br><br>", "<br><br></font>");
         self.page = string.replace( self.page, "'", '"' )
         self.page = string.replace( self.page, '<font size="1">', '' )
@@ -168,9 +170,9 @@ class SearchPlugin(movie.SearchMovie):
 
     def get_searches(self):
         elements = string.split(self.page,"<br>")
-        if (elements[0]<>''):
+        if (elements[0]!=''):
             for element in elements:
-                print element
+                print(element)
                 elementid = gutils.trim(element,'<a href="film','"')
                 if not elementid is None and not elementid == '':
                     elementname = gutils.trim(element, '>', '<')

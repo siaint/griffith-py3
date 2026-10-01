@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 # vim: fdm=marker et ts=4 sw=4
+from __future__ import absolute_import
 __revision__ = '$Id: advfilter.py 1478 2010-11-23 20:25:16Z mikej06 $'
 
 # Copyright (c) 2008 Vasco Nunes, Piotr Ożarowski
@@ -75,7 +76,7 @@ QUERY_COMMAND_NAMES = {
 
 
 def show_window(self):
-    if self.widgets['advfilter']['window'].flags() & gtk.VISIBLE == gtk.VISIBLE:
+    if self.widgets['advfilter']['window'].get_visible():
         self.widgets['advfilter']['window'].present()
         return True
     initialize(self.widgets['advfilter'], self.db, self.field_names)
@@ -381,7 +382,7 @@ def save(gsql, widgets):
     session.add(filter_)
     try:
         session.commit()
-    except Exception, e:
+    except Exception as e:
         session.rollback()
         log.warn(e)
         warning(_("Cannot save search conditions"), widgets['window'])
@@ -457,7 +458,10 @@ def create_select_query(self, columns, conditions, query):
     if query is None: # initial query not set so create one
         if not columns:
             columns = get_select_columns(self.config)
-        query = select(columns, bind=self.db.session.bind)
+        if isinstance(columns, (list, tuple)):
+            query = select(*columns)
+        else:
+            query = select(columns)
 
     self._search_conditions = conditions # save for later
     # TODO: remove after debugging:

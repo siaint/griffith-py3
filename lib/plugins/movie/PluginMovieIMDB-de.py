@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from six.moves import range
 __revision__ = '$Id: PluginMovieIMDB-de.py 1638 2013-01-29 21:36:08Z mikej06 $'
 
 # Copyright (c) 2007-2012 Michael Jahn
@@ -91,7 +93,7 @@ class Plugin(movie.Movie):
             self.plot = self.plot + '\n\n'
             germanplotelements[0] = ''
             for element in germanplotelements:
-                if element <> '':
+                if element != '':
                     self.plot = self.plot + gutils.strip_tags(gutils.before(gutils.after(element, '>'), '</a>')) + '\n\n'
         if self.plot == '':
             # nothing in german found, try original
@@ -101,15 +103,15 @@ class Plugin(movie.Movie):
                 self.plot = self.plot + '\n\n'
                 elements[0] = ''
                 for element in elements:
-                    if element <> '':
+                    if element != '':
                         self.plot = self.plot + gutils.strip_tags(gutils.before(gutils.after(element, '>'), '</a>')) + '\n\n'
         plotlist = string.split(gutils.trim(self.plot_page, 'id="plot-summaries-content">', '</ul>'), '<li')
         plotcompilation = ''
         for listelement in plotlist:
-            if listelement <> '':
+            if listelement != '':
                 plotcompilation = plotcompilation + gutils.trim(listelement, '<p>', '</p>') + '\n'
                 plotcompilation = plotcompilation + re.sub('<[^<]+?>', '', gutils.trim(listelement, '<div class="author-container">', '</div>').replace('\n','').lstrip()) + '\n\n'
-        if plotcompilation <> '':
+        if plotcompilation != '':
             self.plot = plotcompilation
 
     def get_year(self):
@@ -167,7 +169,7 @@ class Plugin(movie.Movie):
         if self.rating:
             try:
                 self.rating = round(float(self.rating), 0)
-            except Exception, e:
+            except Exception as e:
                 self.rating = 0
         else:
             self.rating = 0

@@ -1,5 +1,10 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from __future__ import print_function
+import six
+from six.moves import map
+from six import unichr
 __revision__ = '$Id: gutils.py 1582 2011-09-04 21:08:14Z piotrek $'
 
 # Copyright (c) 2005-2009 Vasco Nunes, Piotr Ożarowski
@@ -22,22 +27,23 @@ __revision__ = '$Id: gutils.py 1582 2011-09-04 21:08:14Z piotrek $'
 # GNU General Public License, version 2 or later
 
 import gzip
-import htmlentitydefs
+import six.moves.html_entities
 import logging
 import os
 import re
 import string
 import sys
 import webbrowser
-from StringIO import StringIO
+from io import StringIO
 import platform
 
-try:
-    import gtk
-    import db
-except:
-    gtk = None
-    pass
+from lib import db
+
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, Gdk, GdkPixbuf
+gtk = Gtk
+gdk = Gdk
     
 mac = False
 
@@ -62,7 +68,7 @@ def remove_accents(txt, encoding='iso-8859-1'):
          241: u'n', 242: u'o', 243: u'o', 244: u'o', 245: u'o', 246: u'o',
          248: u'o', 249: u'u', 250: u'u', 251: u'u', 252: u'u', 253: u'y',
          255: u'y'}
-    return unicode(txt, encoding).translate(d)
+    return six.text_type(txt, encoding).translate(d)
 
 
 def is_number(x):
@@ -142,8 +148,8 @@ def before(text, key):
 
 
 def gescape(text):
-    text = string.replace(text, "'", "''")
-    text = string.replace(text, "--", "-")
+    text = text.replace("'", "''")
+    text = text.replace("--", "-")
     return text
 
 
@@ -153,7 +159,7 @@ def progress(blocks, size_block, size):
         transfered = size
     elif size < 0:
         size = "?"
-    print transfered, '/', size, 'bytes'
+    print(transfered, '/', size, 'bytes')
 
 # functions to handle comboboxentry stuff
 
@@ -177,7 +183,7 @@ def on_combo_box_entry_changed(widget):
     m_iter = widget.get_active_iter()
     if m_iter:
         value = model.get_value(m_iter, 0)
-        if type(value) is str:
+        if isinstance(value, bytes):
             value = value.decode('utf-8')
         return value
     else:
@@ -191,16 +197,16 @@ def on_combo_box_entry_changed_name(widget):
 def convert_entities(text):
 
     def conv(ents):
-        entities = htmlentitydefs.entitydefs
+        entities = six.moves.html_entities.entitydefs
         ents = ents.group(0)
         ent_code = entities.get(ents[1:-1], None)
         if ent_code:
             try:
-                ents = unicode(ent_code, 'UTF-8')
+                ents = six.text_type(ent_code, 'UTF-8')
             except UnicodeDecodeError:
-                ents = unicode(ent_code, 'latin-1')
-            except Exception, ex:
-                print("error occurred while converting entity %s: %s" % (ents, ex))
+                ents = six.text_type(ent_code, 'latin-1')
+            except Exception as ex:
+                print(("error occurred while converting entity %s: %s" % (ents, ex)))
 
             # check if it still needs conversion
             if not ENTITY.search(ents):
@@ -261,8 +267,8 @@ def gdecode(txt, encode):
 
 def error(msg, parent=None):
     dialog = gtk.MessageDialog(parent,
-            gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-            gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, msg)
+            Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+            Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, msg)
     dialog.set_skip_taskbar_hint(False)
     dialog.run()
     dialog.destroy()
@@ -270,8 +276,8 @@ def error(msg, parent=None):
 
 def urllib_error(msg, parent=None):
     dialog = gtk.MessageDialog(parent,
-            gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-            gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, msg)
+            Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+            Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, msg)
     dialog.set_skip_taskbar_hint(False)
     dialog.run()
     dialog.destroy()
@@ -282,8 +288,8 @@ def warning(msg, parent=None):
         macutils.createAlert(msg)
     else:
         dialog = gtk.MessageDialog(parent,
-            gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-            gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            gtk.DialogFlags.MODAL | gtk.DialogFlags.DESTROY_WITH_PARENT,
+            gtk.MessageType.WARNING, gtk.ButtonsType.OK, msg)
         dialog.set_skip_taskbar_hint(False)
         dialog.run()
         dialog.destroy()
@@ -293,8 +299,9 @@ def info(msg, parent=None):
         macutils.createAlert(msg)
     else:
         dialog = gtk.MessageDialog(parent,
-                gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-                gtk.MESSAGE_INFO, gtk.BUTTONS_OK, msg)
+            gtk.DialogFlags.MODAL | gtk.DialogFlags.DESTROY_WITH_PARENT,
+            gtk.MessageType.INFO, gtk.ButtonsType.OK, msg)
+
         dialog.set_skip_taskbar_hint(False)
         dialog.run()
         dialog.destroy()
@@ -305,15 +312,15 @@ def question(msg, window=None):
         return response
     else:
         dialog = gtk.MessageDialog(window,
-            gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-            gtk.MESSAGE_QUESTION, gtk.BUTTONS_NONE, msg)
-        dialog.add_buttons(gtk.STOCK_YES, gtk.RESPONSE_YES,
-            gtk.STOCK_NO, gtk.RESPONSE_NO)
-        dialog.set_default_response(gtk.RESPONSE_NO)
+            Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+            Gtk.MessageType.QUESTION, Gtk.ButtonsType.NONE, msg)
+        dialog.add_buttons(gtk.STOCK_YES, Gtk.ResponseType.YES,
+            gtk.STOCK_NO, Gtk.ResponseType.NO)
+        dialog.set_default_response(Gtk.ResponseType.NO)
         dialog.set_skip_taskbar_hint(False)
         response = dialog.run()
         dialog.destroy()
-        return response in (gtk.RESPONSE_OK, gtk.RESPONSE_YES)
+        return response in (Gtk.ResponseType.OK, Gtk.ResponseType.YES)
 
 def popup_message(message):
     """shows popup message while executing decorated function"""
@@ -324,7 +331,7 @@ def popup_message(message):
             if gtk:
                 window = gtk.Window()
                 window.set_title('Griffith info')
-                window.set_position(gtk.WIN_POS_CENTER)
+                window.set_position(Gtk.WindowPosition.CENTER)
                 window.set_keep_above(True)
                 window.stick()
                 window.set_default_size(200, 50)
@@ -333,17 +340,17 @@ def popup_message(message):
 %s</big>""" % message)
                 window.add(label)
                 window.set_modal(True)
-                window.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
+                window.set_type_hint(Gdk.WindowTypeHint.DIALOG)
                 window.show_all()
                 while gtk.events_pending():    # give GTK some time for updates
                     gtk.main_iteration()
             else:
-                print message,
+                print(message, end=' ')
             res = f(*args, **kwargs)
             if gtk:
                 window.destroy()
             else:
-                print ' [done]'
+                print(' [done]')
             return res
         return wrapped_f
     return wrap
@@ -368,7 +375,7 @@ def file_chooser(title, action=None, buttons=None, name='', folder=os.path.expan
             return False 
     else:
         dialog = gtk.FileChooserDialog(title=title, action=action, buttons=buttons)
-        dialog.set_default_response(gtk.RESPONSE_OK)
+        dialog.set_default_response(Gtk.ResponseType.OK)
         if name:
             dialog.set_current_name(name)
         if folder:
@@ -401,9 +408,9 @@ def file_chooser(title, action=None, buttons=None, name='', folder=os.path.expan
 
 
         response = dialog.run()
-        if response == gtk.RESPONSE_OK:
+        if response == Gtk.ResponseType.OK:
             filename = dialog.get_filename()
-        elif response == gtk.RESPONSE_CANCEL:
+        elif response == Gtk.ResponseType.CANCEL:
             filename = None
         else:
             return False
@@ -415,7 +422,7 @@ def file_chooser(title, action=None, buttons=None, name='', folder=os.path.expan
 def update_preview_cb(file_chooser, preview):
     filename = file_chooser.get_preview_filename()
     try:
-        pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(filename, 128, 128)
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
         preview.set_from_pixbuf(pixbuf)
         have_preview = True
     except:
@@ -459,7 +466,7 @@ def clean_posters_dir(self):
                 # it's safe to remove all thumbs, they'll be regenerated later
                 os.unlink(filepath)
             else:
-                poster_md5 = md5sum(file(filepath, 'rb'))
+                poster_md5 = md5sum(open(filepath, 'rb'))
                 # lets check if this poster is orphan
                 used = self.db.session.query(db.Poster).filter(db.Poster.md5sum == poster_md5).count()
                 if not used:
@@ -467,9 +474,9 @@ def clean_posters_dir(self):
                     os.unlink(filepath)
 
     if counter:
-        print "%d orphan files cleaned." % counter
+        print("%d orphan files cleaned." % counter)
     else:
-        print "No orphan files found."
+        print("No orphan files found.")
 
 
 def decompress(data):
@@ -477,7 +484,7 @@ def decompress(data):
         compressedStream = StringIO(data)
         gzipper = gzip.GzipFile(fileobj=compressedStream)
         data = gzipper.read()
-    except Exception, e:
+    except Exception as e:
         log.debug("Cannot decompress data: ", e)
         pass
     return data
@@ -496,35 +503,36 @@ def get_dependencies():
             'debian_req': '2.5'})
             # TODO: 'fedora', 'suse', etc.
 
-    try:
-        import gtk
-        version = '.'.join([str(i) for i in gtk.pygtk_version])
-        if gtk.pygtk_version <= (2, 6, 0):
-            version = '-%s' % version
-    except:
-        version = False
-    depend.append({'module': 'gtk',
-        'version': version,
-        'module_req': '2.6',
-        'url': 'http://www.pygtk.org/',
-        'debian': 'python-gtk2',
-        'debian_req': '2.8.6-1'})
-        # TODO: 'fedora', 'suse', etc.
+# Проверка gtk и gtk.glade отключена для порта на PyGObject / GTK 3
+#    try:
+#        import gtk
+#        version = '.'.join([str(i) for i in gtk.pygtk_version])
+#        if gtk.pygtk_version <= (2, 6, 0):
+#            version = '-%s' % version
+#    except:
+#        version = False
+#    depend.append({'module': 'gtk',
+#        'version': version,
+#        'module_req': '2.6',
+#        'url': 'http://www.pygtk.org/',
+#        'debian': 'python-gtk2',
+#        'debian_req': '2.8.6-1'})
+#        # TODO: 'fedora', 'suse', etc.
 
-    try:
-        import gtk.glade
-        # (version == gtk.pygtk_version)
-    except:
-        version = False
-    depend.append({'module': 'gtk.glade',
-        'version': version,
-        'module_req': '2.6',
-        'url': 'http://www.pygtk.org/',
-        'debian': 'python-glade2',
-        'debian_req': '2.8.6-1'})
+#    try:
+#        import gtk.glade
+#        # (version == gtk.pygtk_version)
+#    except:
+#        version = False
+#    depend.append({'module': 'gtk.glade',
+#        'version': version,
+#        'module_req': '2.6',
+#        'url': 'http://www.pygtk.org/',
+#        'debian': 'python-glade2',
+#        'debian_req': '2.8.6-1'})
     try:
         import sqlalchemy
-        if map(int, sqlalchemy.__version__[:3].split('.')) < [0, 5]:
+        if list(map(int, sqlalchemy.__version__[:3].split('.'))) < [0, 5]:
             version = "-%s" % sqlalchemy.__version__
         else:
             version = sqlalchemy.__version__
@@ -538,10 +546,11 @@ def get_dependencies():
         'debian_req': '0.5~rc3'})
     try:
         import sqlite3
-        version = sqlite3.version
         sqliteversion = sqlite3.sqlite_version
+        version = getattr(sqlite3, 'version', sqliteversion)
     except ImportError:
         version = False
+
     if version is False:
         try:
             import pysqlite2.dbapi2
@@ -633,7 +642,7 @@ def get_dependencies():
 
 
 def html_encode(s):
-    if not isinstance(s, basestring):
+    if not isinstance(s, six.string_types):
         s = str(s)
     s = s.replace('&', '&amp;')
     s = s.replace('<', '&lt;')
@@ -681,11 +690,11 @@ def copytree(src, dst, symlinks=False):
                 copytree(srcname, dstname, symlinks)
             else:
                 copy2(srcname, dstname)
-        except (IOError, os.error), why:
+        except (IOError, os.error) as why:
             errors.append((srcname, dstname, why))
         # catch the Error from the recursive copytree so that we can
         # continue with other files
-        except EnvironmentError, err:
+        except EnvironmentError as err:
             errors.extend(err.args[0])
     if errors:
         raise EnvironmentError(errors)
@@ -713,7 +722,7 @@ def md5sum(fobj):
             m.update(d)
     else:
         m.update(fobj)
-    return unicode(m.hexdigest())
+    return six.text_type(m.hexdigest())
 
 
 def create_image_cache(md5sum, gsql):
@@ -730,7 +739,7 @@ def create_image_cache(md5sum, gsql):
     fn_small = os.path.join(gsql.data_dir, 'posters', md5sum + '_s.jpg')
 
     if not os.path.isfile(fn_big):
-        f = file(fn_big, 'wb')
+        f = open(fn_big, 'wb')
         f.write(poster.data)
         f.close()
 
@@ -740,12 +749,12 @@ def create_image_cache(md5sum, gsql):
     if not os.path.isfile(fn_medium):
         pixbuf = image.get_pixbuf()
         pixbuf = pixbuf.scale_simple(100, 140, 'bilinear')
-        pixbuf.save(fn_medium, 'jpeg', {'quality': '70'})
+        pixbuf.savev(fn_medium, 'jpeg', ['quality'], ['70'])
 
     if not os.path.isfile(fn_small):
         pixbuf = image.get_pixbuf()
         pixbuf = pixbuf.scale_simple(30, 40, 'bilinear')
-        pixbuf.save(fn_small, 'jpeg', {'quality': '70'})
+        pixbuf.savev(fn_small, 'jpeg', ['quality'], ['70'])
 
     return True
 
@@ -764,7 +773,7 @@ def create_imagefile(destdir, md5sum, gsql, destfilename=None):
     else:
         fulldestpath = os.path.join(destdir, md5sum + '.jpg')
 
-    f = file(fulldestpath, 'wb')
+    f = open(fulldestpath, 'wb')
     try:
         f.write(poster.data)
     finally:
@@ -813,7 +822,7 @@ def get_filesystem_pagesize(path):
             drive = os.path.splitdrive(path)
             sectorsPerCluster = ctypes.c_ulonglong(0)
             bytesPerSector = ctypes.c_ulonglong(0)
-            rootPathName = ctypes.c_wchar_p(unicode(drive[0]))
+            rootPathName = ctypes.c_wchar_p(six.text_type(drive[0]))
 
             ctypes.windll.kernel32.GetDiskFreeSpaceW(rootPathName,
                 ctypes.pointer(sectorsPerCluster),

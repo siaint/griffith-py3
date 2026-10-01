@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
+import six
 __revision__ = '$Id: MovieTrack.py 1605 2011-12-18 22:35:25Z piotrek $'
 
 # Copyright (c) 2009
@@ -90,11 +92,11 @@ class ImportPlugin(IP):
                 fields = currentline[2:-2].split('||')
 
             if not fields[0] == 'NULL':
-                details['title'] = unicode(fields[0])   # MovieName
+                details['title'] = six.text_type(fields[0])   # MovieName
             #details[''] = fields[1]    # SubEntry
             #details[''] = fields[2]    # Location
             if not fields[3] == 'NULL':
-                details['genre'] = unicode(fields[3])   # Genre
+                details['genre'] = six.text_type(fields[3])   # Genre
             #details[''] = fields[4]    # Presence
             if not fields[5] == 'NULL':
                 details['medium_id'] = fields[5]        # Medium
@@ -115,10 +117,10 @@ class ImportPlugin(IP):
                 if filepath:
                     details['poster'] = filepath
             if not fields[8] == 'NULL':
-                details['barcode'] = unicode(fields[8]) # Barcode
+                details['barcode'] = six.text_type(fields[8]) # Barcode
             #details[''] = fields[9]    # AKA
             if not fields[10] == 'NULL':
-                details['notes'] = unicode(fields[10])  # Comments
+                details['notes'] = six.text_type(fields[10])  # Comments
             movieid = fields[11]                        # AGN
             #details[''] = fields[12]   # UGN
 
@@ -142,16 +144,16 @@ class ImportPlugin(IP):
                             if not fields[4] == 'NULL':
                                 details['year'] = fields[4]              # Year
                             if not fields[5] == 'NULL':
-                                details['director'] = unicode(fields[5]) # Director
+                                details['director'] = six.text_type(fields[5]) # Director
                             #details[''] = fields[6]     # Tagline
                             if not fields[7] == 'NULL':
-                                details['plot'] = unicode(fields[7])     # Summary
+                                details['plot'] = six.text_type(fields[7])     # Summary
                             if not fields[8] == 'NULL' and not 'genre' in details:
-                                details['genre'] = unicode(fields[8])   # Genre
+                                details['genre'] = six.text_type(fields[8])   # Genre
                             if not fields[9] == 'NULL':
-                                details['cast'] = unicode(fields[9])    # Actors
+                                details['cast'] = six.text_type(fields[9])    # Actors
                             if not fields[10] == 'NULL':
-                                details['classification'] = unicode(fields[10]) # MPAA
+                                details['classification'] = six.text_type(fields[10]) # MPAA
                             #details[''] = fields[11]    # Language
                             if not fields[12] == 'NULL':
                                 details['runtime'] = fields[12]         # Runtime
@@ -162,7 +164,7 @@ class ImportPlugin(IP):
                                     pass
                             #details[''] = fields[14]    # VoteCount
                             if not fields[15] == 'NULL':
-                                details['site'] = unicode(fields[15])    # URL
+                                details['site'] = six.text_type(fields[15])    # URL
                             #details[''] = fields[16]    # Exclude
             except:
                 log.exception('')
@@ -171,7 +173,7 @@ class ImportPlugin(IP):
 
         except EOFError:
             details = None
-        except Exception, e:
+        except Exception as e:
             log.exception('')
             details = None
 
@@ -201,7 +203,7 @@ class ImportPlugin(IP):
                         version = 3.4
             finally:
                 openfile.close()
-        except Exception, e:
+        except Exception as e:
             log.error(str(e))
         log.info('MovieTrack Import: Found file version %s' % version)
         return version

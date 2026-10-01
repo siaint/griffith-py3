@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieMyMoviesIt.py 1577 2011-08-30 21:13:26Z mikej06 $'
 
 # Copyright (c) 2007-2011

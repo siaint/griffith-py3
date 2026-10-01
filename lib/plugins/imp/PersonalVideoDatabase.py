@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PersonalVideoDatabase.py 1605 2011-12-18 22:35:25Z piotrek $'
 
 # Copyright (c) 2009
@@ -157,7 +158,7 @@ class ImportPlugin(IP):
                             pass
         except EOFError:
             details = None
-        except Exception, e:
+        except Exception as e:
             log.exception('')
             details = None
         self.itemindex = self.itemindex + 1
@@ -184,7 +185,7 @@ class ImportPlugin(IP):
             xmlElement = self.filedom.getElementsByTagName('xml')[0]
             viddbElement = self.filedom.getElementsByTagName('viddb')[0]
             version = 0.9
-        except Exception, e:
+        except Exception as e:
             log.error(str(e))
             self.filedom.unlink()
             self.filedom = None

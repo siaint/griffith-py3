@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from __future__ import print_function
 __revision__ = '$Id: PluginMovieE-Pipoca.py 1467 2010-10-14 18:16:49Z mikej06 $'
 
 # Copyright (c) 2005-2009 Vasco Nunes, Piotr Ożarowski
@@ -43,29 +45,29 @@ class Plugin(movie.Movie):
         self.encode   = 'iso-8859-1'
         self.movie_id = id
         self.url      = "http://www.interfilmes.com/filme_" + str(self.movie_id) + "_.html"
-        print(self.url)
+        print((self.url))
 
     def get_image(self):
         """Finds the film's poster image"""
         tmp_pic = gutils.trim(self.page, "content=\"http://www.interfilmes.com/FILMES/", "\"")
         self.image_url = "http://www.interfilmes.com/FILMES/" + tmp_pic
-        print(self.image_url)
+        print((self.image_url))
 
     def get_o_title(self):
         self.o_title = string.capwords(gutils.trim(self.page, "<u>Título Original:</u>&nbsp;", "<br>"))
-        print(self.o_title)
+        print((self.o_title))
         
     def get_title(self):
         self.title = gutils.trim(self.page, "<u>Título no Brasil:</u>&nbsp;", "<br><u>")
-        print(self.title)
+        print((self.title))
 
     def get_director(self):
         self.director = gutils.strip_tags(gutils.trim(self.page, "<u>Direção:</u>&nbsp;", "<br></font>"))
-        print(self.director)
+        print((self.director))
 
     def get_plot(self):
         self.plot = gutils.trim(self.page, "<div align=\"justify\">", "</div>")
-        print(self.plot)
+        print((self.plot))
 
     def get_year(self):
         self.year = gutils.trim(self.page, "<u>Ano de Lançamento:</u>&nbsp;", "<br>")
@@ -73,9 +75,9 @@ class Plugin(movie.Movie):
     def get_runtime(self):
         "Find the film's running time"
         self.runtime = gutils.trim(self.page, "<u>Tempo de Duração:</u>", " minutos<br>")
-        print(self.runtime)
+        print((self.runtime))
         self.runtime = self.runtime[4:]
-        print(self.runtime)
+        print((self.runtime))
 
     def get_genre(self):
         self.genre = gutils.trim(self.page, "nero:</u>&nbsp;", "<br>")
@@ -95,7 +97,7 @@ class Plugin(movie.Movie):
     def get_site(self):
         tmp_site = gutils.trim(self.page, "content=\"http://www.interfilmes.com/filme_", "\"")
         self.site = "http://www.interfilmes.com/filme_" + tmp_site
-        print(self.site)
+        print((self.site))
 
     def get_trailer(self):        
         self.trailer = ""
@@ -136,9 +138,9 @@ class SearchPlugin(movie.SearchMovie):
 
         if (elements[0] != ''):
             for element in elements:
-                print (gutils.trim(element, "align=center valign=top><a href=\"filme_", "_"))
+                print((gutils.trim(element, "align=center valign=top><a href=\"filme_", "_")))
                 self.ids.append(gutils.trim(element, "align=center valign=top><a href=\"filme_", "_"))
-                print(gutils.strip_tags(gutils.trim(element, "<font color=#FFFFFF face=Verdana size=2>", "</font></a></b></td>")+' - '+gutils.trim(element, "Ano de Lançamento:", "<br>")))
+                print((gutils.strip_tags(gutils.trim(element, "<font color=#FFFFFF face=Verdana size=2>", "</font></a></b></td>")+' - '+gutils.trim(element, "Ano de Lançamento:", "<br>"))))
                 self.titles.append(gutils.strip_tags(gutils.trim(element, "<font color=#FFFFFF face=Verdana size=2>", "</font></a></b></td>")+' - '+gutils.trim(element, "Ano de Lançamento:", "<br>")))
         else:
             self.number_results = 0

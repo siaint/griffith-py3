@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginExportCSV.py 1533 2011-02-08 21:04:38Z iznogoud $'
 
 # Copyright (c) 2005-2007 Vasco Nunes
@@ -66,7 +67,7 @@ class ExportPlugin(Base):
             if overwrite or overwrite is None:
                 movies = self.get_query().execute()
 
-                writer = csv.writer(file(filename[0], 'w'), dialect=csv.excel)
+                writer = csv.writer(open(filename[0], 'w'), dialect=csv.excel)
                 # write column header row
                 writer.writerow(self.fields_to_export)
                 # write data rows

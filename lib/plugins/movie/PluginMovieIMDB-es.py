@@ -1,5 +1,6 @@
 # -*- coding: iso-8859-15 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovieIMDB-es.py 389 2006-07-29 18:43:35Z piotrek $'
 
 # Copyright (c) 2006-2011 Pedro D. Sánchez
@@ -68,12 +69,12 @@ class Plugin(movie.Movie):
     def get_title(self):
         tmp = 0
         tmpTot = 0
-        while (tmp <> -1):
+        while (tmp != -1):
             auxTitle = ''
             tmp = string.find(self.page[tmpTot:], '<i class="transl">')
-            if tmp <> -1:
+            if tmp != -1:
                 auxTitle = gutils.trim(self.page[tmpTot:], '<i class="transl">', '</i>')
-                if string.find(auxTitle, '(Spain)') <> -1:
+                if string.find(auxTitle, '(Spain)') != -1:
                     auxTitle = string.replace(auxTitle, '&#32;', ' ')
                     auxTitle = string.replace(auxTitle, ' (Argentina) ', '')
                     auxTitle = string.replace(auxTitle, ' (Spain) ', '')
@@ -81,7 +82,7 @@ class Plugin(movie.Movie):
                     auxTitle = string.replace(auxTitle, '  [es]', '')
                     tmp = -1
                 tmpTot = tmpTot + tmp + 1
-        if auxTitle <> '':
+        if auxTitle != '':
             self.title = auxTitle
         else:
             self.title = self.o_title
@@ -114,7 +115,7 @@ class Plugin(movie.Movie):
                 self.plot = self.plot + '\n\n'
                 elements[0] = ''
                 for element in elements:
-                    if element <> '':
+                    if element != '':
                         self.plot = self.plot + gutils.strip_tags(gutils.before(element, '</a>')) + '\n\n'
 
     def get_year(self):

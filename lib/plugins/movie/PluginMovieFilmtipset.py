@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id$'
 
 # Copyright (c) 2007-2011
@@ -134,7 +135,7 @@ class SearchPlugin(movie.SearchMovie):
         elements1 = re.split('href="film/', self.page)
         elements1[0] = None
         for element in elements1:
-            if element <> None:
+            if element != None:
                 searchResult = re.search('["&?]', element)
                 if searchResult is None:
                     self.ids.append(gutils.before(element, '"'))

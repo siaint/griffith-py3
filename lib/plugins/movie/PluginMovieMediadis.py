@@ -6,6 +6,7 @@
 # You may use and distribute this software under the terms of the
 # GNU General Public License, version 2 or later
 
+from __future__ import absolute_import
 import gutils
 import movie,string
 
@@ -104,7 +105,7 @@ class SearchPlugin(movie.SearchMovie):
         elements = string.split(self.page,"<td rowspan=\"4\" align=\"center\" valign=\"top\" style=\"padding:4px;\">")
         self.number_results = elements[-1]
 
-        if (elements[0]<>''):
+        if (elements[0]!=''):
             for element in elements:
                 self.ids.append(gutils.trim(element,"/dvd/detail.asp?id=","\">"))
                 self.titles.append(gutils.convert_entities(gutils.trim(element,"\" class=\"dvd-search-title\">","</a>")))    

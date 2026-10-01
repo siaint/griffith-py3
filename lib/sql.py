@@ -1,6 +1,8 @@
 # -*- coding: UTF-8 -*-
 # vim: fdm=marker
 
+from __future__ import absolute_import
+from six.moves import map
 __revision__ = '$Id: sql.py 1538 2011-02-13 20:04:22Z piotrek $'
 
 # Copyright © 2005-2009 Vasco Nunes, Piotr Ożarowski
@@ -66,7 +68,7 @@ class GriffithSQL(object):
 
         conn_params = config.to_dict(section='database')
         conn_params.update({'port': int(conn_params.get('port', 0)),
-                            'engine_kwargs': {'echo': False, 'convert_unicode': False}})
+                            'engine_kwargs': {'echo': False}})
 
         # connect to database --------------------------------------{{{
         dbinitializingsql = None
@@ -80,13 +82,13 @@ class GriffithSQL(object):
         elif config.get('type', section='database') == 'postgres':
             # sqlalchemy version check because postgres dialect is renamed in sqlalchemy>=0.6 from postgres to postgresql
             from sqlalchemy import __version__ as sqlalchemyversion
-            if map(int, sqlalchemyversion[:3].split('.')) < [0, 6]:
+            if list(map(int, sqlalchemyversion[:3].split('.'))) < [0, 6]:
                 url = "postgres"
             else:
                 url = "postgresql"
             url = url + "://%(user)s:%(passwd)s@%(host)s:%(port)d/%(name)s" % conn_params
         elif config.get('type', section='database') == 'mysql':
-            conn_params['engine_kwargs']['convert_unicode'] = True
+            #conn_params['engine_kwargs']['convert_unicode'] = True
             conn_params['engine_kwargs']['pool_recycle'] = int(config.get('pool_recycle', 3600, section='database'))
             url = "mysql://%(user)s:%(passwd)s@%(host)s:%(port)d/%(name)s?charset=utf8&use_unicode=0" % conn_params
         elif config.get('type', section='database') == 'mssql':
@@ -109,7 +111,7 @@ class GriffithSQL(object):
             conn = engine.connect()
             if dbinitializingsql is not None:
                 engine.execute(dbinitializingsql)
-        except Exception, e:    # InvalidRequestError, ImportError
+        except Exception as e:    # InvalidRequestError, ImportError
             log.info("MetaData: %s", e)
             if not fallback:
                 raise e
@@ -130,14 +132,14 @@ class GriffithSQL(object):
         db.metadata.create_all(engine)
         try:
             v = self.session.query(db.Configuration).filter_by(param=u'version').first()    # returns None if table exists && param ISNULL
-        except OperationalError, e:
+        except OperationalError as e:
             log.info(e)
             v = 0
-        except Exception, e:
+        except Exception as e:
             log.error(e)
             v = 0
 
-        if v is not None and v > 1:
+        if v is not None and int(v.value) > 1:
             v = int(v.value)
         if v < self.version:
             from dbupgrade import upgrade_database

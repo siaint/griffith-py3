@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: DVDProfiler.py 1612 2012-01-02 21:14:32Z mikej06 $'
 
 # Copyright (c) 2009
@@ -299,7 +300,7 @@ class ImportPlugin(IP):
                                 details['tags'].append(tagElement.getAttribute('Name').strip())
         except EOFError:
             details = None
-        except Exception, e:
+        except Exception as e:
             log.exception('')
             details = None
         self.itemindex = self.itemindex + 1
@@ -336,7 +337,7 @@ class ImportPlugin(IP):
                             if len(actorElements[0].getElementsByTagName('FirstName')):
                                 version = 2.0
                             break
-        except Exception, e:
+        except Exception as e:
             log.error(str(e))
             self.filedom.unlink()
             self.filedom = None

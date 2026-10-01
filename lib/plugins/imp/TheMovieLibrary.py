@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: TheMovieLibrary.py 1605 2011-12-18 22:35:25Z piotrek $'
 
 # Copyright (c) 2009
@@ -162,7 +163,7 @@ class ImportPlugin(IP):
                     details['color'] = 2
             if currentrow[23]:
                 details['rating'] = currentrow[23]
-        except Exception, e:
+        except Exception as e:
             log.exception('')
             details = None
 
@@ -193,7 +194,7 @@ class ImportPlugin(IP):
             if tablerow:
                 version = 1.4
             curs.close()
-        except Exception, e:
+        except Exception as e:
             log.error(str(e))
         log.info('The Movie Library Import: Found file version %s' % version)
         return version

@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: __init__.py 1533 2011-02-08 21:04:38Z iznogoud $'
 
 # Copyright (c) 2008-2009 Piotr Ożarowski
@@ -373,7 +374,7 @@ class XmlExportBase(Base):
                 log.error("Can't create %s" % dst_directory)
         dst_filename = os.path.join(dst_directory, imagebasename + '.jpg')
         try:
-            f = file(dst_filename, 'wb')
+            f = open(dst_filename, 'wb')
             try:
                 f.write(imagedata)
             finally:

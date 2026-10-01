@@ -1,6 +1,8 @@
 # -*- coding: UTF-8 -*-
 # vim: fdm=marker
 
+from __future__ import absolute_import
+from six.moves import range
 __revision__ = '$Id: PluginExportHTML.py 1509 2011-02-01 21:56:04Z mikej06 $'
 
 # Copyright (c) 2005-2009 Piotr Ożarowski
@@ -245,7 +247,7 @@ class ExportPlugin(Base):
         
     def make_template_list(self):#{{{
         language = 'en'
-        if os.environ.has_key('LANG'):
+        if 'LANG' in os.environ:
             language = os.environ['LANG'][:2]
         templates = {}
         j=0 # number of templates
@@ -357,7 +359,7 @@ class ExportPlugin(Base):
             self.widgets['combo_theme'].insert_text(i, self.templates[i]['name'])
 
         # sortby combo
-        keys = self.names.keys()
+        keys = list(self.names.keys())
         keys.sort()
         j = 0
         pos_o_title = 0
@@ -626,7 +628,7 @@ class ExportPlugin(Base):
         if os.path.isdir(data_path):
             try:
                 gutils.copytree(data_path, config['export_dir'])
-            except Exception, err:
+            except Exception as err:
                 gutils.warning(str(err))
         
         if fields['movies_image']:
@@ -704,7 +706,7 @@ class ExportPlugin(Base):
         template_dir = os.path.join(self.locations['share'], 'export_templates', self.templates[tid]['dir'])
         try:
             filename = 'page.tpl'
-            tpl_header = file(os.path.join(template_dir,filename), "r").read()
+            tpl_header = open(os.path.join(template_dir,filename), "r").read()
         except:
             gutils.error(_("Can't open %s!")%filename)
             return False
@@ -758,7 +760,7 @@ class ExportPlugin(Base):
             if item==1:
                 filename = os.path.join(config['export_dir'],'page_%s.' % page + self.templates[tid]['ext'])
                 try:
-                    exported_file = file(filename, 'w')
+                    exported_file = open(filename, 'w')
                 except:
                     gutils.error(_("Can't create %s!")%filename)
                     return False
@@ -799,7 +801,7 @@ class ExportPlugin(Base):
                                 data = data.replace('\r\n', linebreak_replacement)
                                 data = data.replace('\n', linebreak_replacement)
                             tmp = self.fill_template(tmp, self.names[j], data, j)
-                        except Exception, ex:
+                        except Exception as ex:
                             log.info("Error occurred while decoding %s (movie number: %s)" % (self.names[j], row['movies_number']))
                 else:
                     tmp = self.fill_template(tmp, self.names[j], remove=True)

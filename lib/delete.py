@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: delete.py 1536 2011-02-12 00:50:13Z iznogoud $'
 
 # Copyright (c) 2005-2009 Vasco Nunes, Piotr Ożarowski
@@ -25,7 +26,10 @@ import logging
 import os
 import db
 import gutils
-from  main_treeview import treeview_selection_on_event
+try:
+    from .main_treeview import treeview_selection_on_event
+except (ImportError, ValueError):
+    from main_treeview import treeview_selection_on_event
 
 log = logging.getLogger("Griffith")
 
@@ -69,7 +73,7 @@ def delete_poster(self, md5sum, commit=False):
         if commit:
             try:
                 session.commit()
-            except Exception, e:
+            except Exception as e:
                 log.warn("cannot delete poster from db: %s", e)
                 session.rollback()
                 return False

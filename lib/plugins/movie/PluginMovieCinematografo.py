@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = ''
 
 # Copyright (c) 2005-2012 Vasco Nunes, Piotr Ożarowski
@@ -203,7 +204,7 @@ class SearchPlugin(movie.SearchMovie):
         if (elements[0] != ''):
             for element in elements:
                 id = gutils.trim(element, "?codice=", "\">")
-                if id <> '':
+                if id != '':
                     self.ids.append(id)
                     title = self.capwords(gutils.convert_entities(gutils.trim(element, "<b>", "</b>")))
                     year = re.search('([[][0-9]{4}[]])', element)

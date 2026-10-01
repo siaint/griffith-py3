@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: PluginMovie7arte.py 1138 2009-01-31 21:48:43Z mikej06 $'
 
 # Copyright (c) 2005-2009 Vasco Nunes, Piotr Ozarowski

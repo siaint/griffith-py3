@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id$'
 
 # Copyright (c) 2009
@@ -23,7 +24,7 @@ __revision__ = '$Id$'
 
 import gutils, movie
 import string, re
-import urllib, httplib
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error, six.moves.http_client
 try:
     import simplejson as json
 except:

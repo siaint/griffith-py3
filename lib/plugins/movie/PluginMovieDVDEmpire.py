@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+from six.moves import range
 __revision__ = '$Id: PluginMovieDVDEmpire.py 1650 2013-06-26 20:59:58Z mikej06 $'
 
 # Copyright (c) 2007-2009
@@ -122,7 +124,7 @@ class Plugin(movie.Movie):
         tmp_page = tmp_page.replace('<br>', '\n')
         tmp_page = tmp_page.replace('<br />', '\n')
         tmp_page = gutils.strip_tags(tmp_page)
-        if tmp_page <> '':
+        if tmp_page != '':
             self.notes = self.notes + 'Features:\n' + tmp_page + '\n\n'
         tmp_page = gutils.trim(self.page, 'Video</strong>', '<strong>')
         tmp_page = tmp_page.replace('\r\n', '')
@@ -130,7 +132,7 @@ class Plugin(movie.Movie):
         tmp_page = tmp_page.replace('<br>', '\n')
         tmp_page = tmp_page.replace('<br />', '\n')
         tmp_page = gutils.strip_tags(tmp_page)
-        if tmp_page <> '':
+        if tmp_page != '':
             self.notes = self.notes + 'Video:' + tmp_page
         tmp_page = gutils.trim(self.page, 'Audio</strong>', '</div>')
         tmp_page = tmp_page.replace('\r\n', '')
@@ -139,7 +141,7 @@ class Plugin(movie.Movie):
         tmp_page = tmp_page.replace('<br />', '\n')
         tmp_page = tmp_page.replace('(more info)', '\n')
         tmp_page = gutils.strip_tags(tmp_page)
-        if tmp_page <> '':
+        if tmp_page != '':
             self.notes = self.notes + 'Audio:' + tmp_page
 
     def get_screenplay(self):
@@ -171,7 +173,7 @@ class SearchPlugin(movie.SearchMovie):
             tmp_title = string.replace(tmp_title, '&nbsp;', ' ')
             tmp_title = string.replace(tmp_title, '&amp;', '&')
             tmp_title = string.replace(tmp_title, '&quot;', '"')
-            if tmp_title <> '':
+            if tmp_title != '':
                 self.ids.append(gutils.trim(elements[index], 'href="', '"'))
                 type = re.search('>Blu-ray</span>', title_element)
                 if type:

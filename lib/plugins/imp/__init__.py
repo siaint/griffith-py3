@@ -1,5 +1,8 @@
 # -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+import six
+from six.moves import range
 __revision__ = '$Id: __init__.py 1628 2012-08-30 21:23:02Z mikej06 $'
 
 # Copyright (c) 2006-2011 Piotr Ożarowski
@@ -218,7 +221,7 @@ class ImportPlugin(object):
                                     self.loadmappings()
                                 for tag in tags:
                                     try:
-                                        if isinstance(tag, (str, unicode)):
+                                        if isinstance(tag, (str, six.text_type)):
                                             # TODO: adding new tag names?
                                             tag_id = self.tagmap[tag.lower()]
                                         else:
@@ -408,7 +411,7 @@ def on_import_button_clicked(button, self, *args):
                         % (plugin_name, ip.imported), self.widgets['window'])
                     self.populate_treeview()
                 ip.clear()
-        except Exception, e:
+        except Exception as e:
             log.exception('')
             gutils.error(str(e), self.widgets['window'])
         finally:

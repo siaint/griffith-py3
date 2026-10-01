@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: $'
 
 # Copyright (c) 2011, 2012
@@ -154,7 +155,7 @@ class ImportPlugin(IP):
                         details['image'] = os.path.join(self.zipdir, 'images', imgfile)
         except EOFError:
             details = None
-        except Exception, e:
+        except Exception as e:
             log.exception('')
             details = None
 
@@ -184,7 +185,7 @@ class ImportPlugin(IP):
             self.filedom = minidom.parse(os.path.join(self.zipdir, 'tellico.xml'))
             rootElement = self.filedom.getElementsByTagName('tellico')[0]
             version = rootElement.getAttribute('syntaxVersion')
-        except Exception, e:
+        except Exception as e:
             log.error(str(e))
             if self.filedom:
                 self.filedom.unlink()

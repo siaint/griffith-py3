@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 __revision__ = '$Id: MyDVDs.py 1605 2011-12-18 22:35:25Z piotrek $'
 
 # Copyright (c) 2009
@@ -120,7 +121,7 @@ class ImportPlugin(IP):
                     details['rating'] = 2 * int(currentrow[12])
                 except:
                     pass
-        except Exception, e:
+        except Exception as e:
             log.exception('')
             details = None
         return details
@@ -150,7 +151,7 @@ class ImportPlugin(IP):
             if tablerow:
                 version = 1.6
             curs.close()
-        except Exception, e:
+        except Exception as e:
             log.error(str(e))
         log.info('MyDVDs Import: Found file version %s' % version)
         return version

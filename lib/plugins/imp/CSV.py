@@ -1,5 +1,8 @@
 ﻿# -*- coding: UTF-8 -*-
 
+from __future__ import absolute_import
+import six
+from functools import reduce
 __revision__ = '$Id: CSV.py 1549 2011-05-18 12:36:46Z mikej06 $'
 
 ###########################################################################
@@ -35,9 +38,9 @@ def digits_only(s):
 def letters_only(s):
     _match = re.compile(r"\D+")
     try:
-        s = reduce(unicode.join, _match.findall(s))
+        s = reduce(six.text_type.join, _match.findall(s))
     except:
-        s = unicode(s)
+        s = six.text_type(s)
     return s
 
 
@@ -269,7 +272,7 @@ class ImportPlugin(IP):
             self.b_add.set_sensitive(False)
 
     def open_source(self):
-        import csv
+        from . import csv
         import codecs
         # get user values for converting/opening the csv-file
         self.start_row = int(digits_only(self.gtk.get_widget('e_startrow').get_text()))
@@ -295,7 +298,7 @@ class ImportPlugin(IP):
             self.data = csv.reader(codecs.open(self.__source_name, 'r', encoding), dialect = 'excel', quotechar = quotechar, delimiter = delimiter, lineterminator = lineterminator)
 
             # get the first line in csv file for the field names
-            self.csv_header = self.data.next()
+            self.csv_header = next(self.data)
 
             # if the user wants to import line 0 then we have to open it again
             if self.start_row == 0:
@@ -323,7 +326,7 @@ class ImportPlugin(IP):
             detector = UniversalDetector()
             detector.reset()
             lines = 0
-            for line in file(self.__source_name, 'rb'):
+            for line in open(self.__source_name, 'rb'):
                 detector.feed(line)
                 lines += 1
                 if detector.done or lines == 50:
@@ -344,12 +347,12 @@ class ImportPlugin(IP):
         self.gtk.get_widget('e_encoding').set_active(itempos)
         # auto-detect CSV import settings (optional)
         try:
-            import csv
+            from . import csv
             sniffer = csv.Sniffer()
             csvfilesize = os.path.getsize(self.__source_name)
             if csvfilesize > 65535:
                 csvfilesize = 65535
-            csvfile = file(self.__source_name, 'rb')
+            csvfile = open(self.__source_name, 'rb')
             try:
                 # quote char, line terminator and field delimiter
                 proposed_dialect = sniffer.sniff(csvfile.read(csvfilesize))
@@ -377,19 +380,19 @@ class ImportPlugin(IP):
     def count_movies(self):
         i = 0
         try:
-            import csv
+            from . import csv
             data = csv.reader(open(self.__source_name))
-            while data.next():
+            while next(data):
                 i += 1
         except:
             return i
 
     def get_movie_details(self):
         try:
-            item = self.data.next()
+            item = next(self.data)
             # skip possible empty lines
             while not len(item):
-                item = self.data.next()
+                item = next(self.data)
         except:
             return None
         if item is None:
@@ -416,7 +419,7 @@ class ImportPlugin(IP):
                 elif field == 'volume_id' or field == 'medium_id' or field == 'collection_id' or field == 'vcodec_id':
                     # foreign key fields are mapped in the base class; can be an integer value
                     # for a direct assignment or a string for a lookup in the database table
-                    t_movies[field] = unicode(item[int(self.import_table[field])])
+                    t_movies[field] = six.text_type(item[int(self.import_table[field])])
                 elif field == 'seen' or field == 'loaned':
                     t_movies[field] = bool(item[int(self.import_table[field])])
                 elif field == 'country':
@@ -427,10 +430,10 @@ class ImportPlugin(IP):
                             t_movies[field] = item[int(self.import_table[field])].replace(', ', "\n")
                     except:
                         t_movies[field] = item[int(self.import_table[field])].replace(',', "\n")
-                    t_movies[field] = unicode(t_movies[field])
+                    t_movies[field] = six.text_type(t_movies[field])
                 else:
                     # 1:1 import
-                    t_movies[field] = unicode(item[int(self.import_table[field])])
+                    t_movies[field] = six.text_type(item[int(self.import_table[field])])
             except:
                 # error field can't be imported
                 log.exception("field %s cannot be imported", field)
